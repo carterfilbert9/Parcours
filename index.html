@@ -90,18 +90,24 @@ button { cursor:pointer; }
 }
 .nav-item {
   flex: 1; display: flex; flex-direction: column;
-  align-items: center; gap: .2rem;
+  align-items: center; gap: .25rem;
   background: none; border: none; color: var(--muted);
-  font-size: .65rem; font-weight: 500; letter-spacing: .03em;
+  font-size: .62rem; font-weight: 500; letter-spacing: .03em;
   text-transform: uppercase; transition: color .2s;
-  padding: .3rem 0;
+  padding: .25rem 0;
 }
 .nav-item.active { color: var(--accent); }
 .nav-icon {
-  font-size: 1.3rem; line-height: 1;
-  transition: transform .2s;
+  font-size: 1.25rem; line-height: 1;
+  width: 42px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-pill);
+  transition: background .2s, transform .2s;
 }
-.nav-item.active .nav-icon { transform: scale(1.15); }
+.nav-item.active .nav-icon {
+  background: rgba(232,201,122,0.15);
+  transform: scale(1.1);
+}
 
 /* ── PAGE HEADER ────────────────────────────────────── */
 .page-header {
@@ -137,7 +143,7 @@ button { cursor:pointer; }
 
 /* ── STAT ROW ───────────────────────────────────────── */
 .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin-bottom: .9rem; }
-.stat-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.stat-row-3 { grid-template-columns: 1fr 1fr; }
 
 /* ── PROGRESS RING ──────────────────────────────────── */
 .ring-wrap { position: relative; width: 100px; height: 100px; margin: 0 auto; }
@@ -273,7 +279,7 @@ canvas { width: 100% !important; }
 }
 .upload-zone:hover { border-color: var(--accent3); }
 .upload-zone input { display: none; }
-.result-macros { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .6rem; margin: .8rem 0; }
+.result-macros { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin: .8rem 0; }
 .rmacro { background: var(--card2); border-radius: var(--r-sm); padding: .6rem; text-align: center; }
 .rmacro-val { font-family: var(--font-t); font-size: 1.3rem; line-height: 1; }
 .rmacro-lbl { font-size: .68rem; color: var(--muted); margin-top: .15rem; }
@@ -313,6 +319,61 @@ canvas { width: 100% !important; }
 .dur-panel { display: none; background: var(--card2); border-radius: var(--r-sm); padding: .75rem; margin-top: .4rem; }
 .dur-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
 .dur-input { width: 60px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: .3rem .4rem; color: var(--text); font-size: .8rem; outline: none; text-align: center; }
+
+
+/* ── QUICK LOG ──────────────────────────────────────── */
+.quick-log {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6rem;
+  margin-bottom: 1rem;
+}
+.ql-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .3rem; padding: .9rem .5rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); color: var(--text);
+  font-size: .75rem; font-weight: 500;
+  transition: all .2s; cursor: pointer;
+}
+.ql-btn:hover { border-color: var(--accent); background: rgba(232,201,122,0.05); }
+.ql-btn.sport:hover  { border-color: var(--success); background: rgba(110,231,183,0.05); }
+.ql-btn.repas:hover  { border-color: var(--orange);  background: rgba(251,146,60,0.05); }
+.ql-btn.poids:hover  { border-color: var(--accent2); background: rgba(122,184,232,0.05); }
+.ql-icon { font-size: 1.6rem; line-height: 1; }
+.ql-label { font-size: .72rem; color: var(--muted); }
+.ql-badge {
+  font-size: .65rem; padding: .1rem .45rem;
+  border-radius: var(--r-pill); font-weight: 600;
+  margin-top: .1rem;
+}
+.ql-badge.green  { background: rgba(110,231,183,.15); color: var(--success); }
+.ql-badge.orange { background: rgba(251,146,60,.15);  color: var(--orange); }
+.ql-badge.blue   { background: rgba(122,184,232,.15); color: var(--accent2); }
+
+/* ── MINI MODAL ─────────────────────────────────────── */
+.mini-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 150; display: flex; align-items: flex-end;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.mini-modal {
+  width: 100%; max-width: 430px; margin: 0 auto;
+  background: var(--card); border-radius: var(--r) var(--r) 0 0;
+  padding: 1.2rem 1rem calc(1.2rem + var(--safe-b));
+  animation: slideUp .25s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.mini-modal-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--border); margin: 0 auto 1rem;
+}
+.mini-modal-title {
+  font-family: var(--font-t); font-size: 1.3rem;
+  margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem;
+}
+.mini-form-row { display: flex; gap: .6rem; margin-bottom: .7rem; align-items: flex-end; flex-wrap: wrap; }
 
 /* ── TOAST ──────────────────────────────────────────── */
 #toast {
@@ -488,56 +549,63 @@ canvas { width: 100% !important; }
 
     <!-- DAILY FORM -->
     <div id="jtab-daily">
-      <div class="card">
-        <div class="card-label" style="margin-bottom:.8rem">Informations du jour</div>
-        <div class="form-row">
-          <div class="field"><label>Date</label><input type="date" id="inp-date"></div>
-          <div class="field"><label>Poids (kg)</label><input type="number" id="inp-weight" step="0.1" placeholder="109.5"></div>
-        </div>
 
-        <div class="field field-full" style="margin-bottom:.7rem">
-          <label>Séances du jour</label>
-          <div class="chips" id="chips-container" style="margin-top:.4rem"></div>
-          <div class="dur-panel" id="dur-panel">
-            <div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">⏱ Durée</div>
-            <div class="dur-grid" id="dur-fields"></div>
-          </div>
-          <div style="display:flex;gap:.5rem;align-items:center;margin-top:.5rem;flex-wrap:wrap">
-            <input type="text" id="inp-free-act" placeholder="Autre activité…" style="flex:1;min-width:120px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.5rem .75rem;color:var(--text);font-size:.82rem;outline:none">
-            <input type="number" id="inp-free-dur" placeholder="min" onchange="updateCalTarget()" style="width:80px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.5rem .6rem;color:var(--text);font-size:.82rem;outline:none;text-align:center">
-            <span style="font-size:.75rem;color:var(--muted)">≈ <span id="free-kcal" style="color:var(--success)">0</span> kcal</span>
-          </div>
-        </div>
+      <!-- QUICK LOG -->
+      <div class="quick-log">
+        <button class="ql-btn sport" onclick="openModal('sport')">
+          <div class="ql-icon">🏃</div>
+          <div>Séance</div>
+          <div class="ql-label">Ajouter</div>
+          <div class="ql-badge green" id="ql-sport-badge" style="display:none"></div>
+        </button>
+        <button class="ql-btn repas" onclick="openModal('repas')">
+          <div class="ql-icon">🍽️</div>
+          <div>Repas</div>
+          <div class="ql-label">Ajouter</div>
+          <div class="ql-badge orange" id="ql-repas-badge" style="display:none"></div>
+        </button>
 
-        <div class="form-row">
-          <div class="field field-full">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
-              <label style="margin:0">Calories (kcal)</label>
-              <span class="cal-badge" id="cal-badge">Cible repos : 2 200</span>
-            </div>
-            <input type="number" id="inp-cal" placeholder="2200">
-          </div>
-          <div class="field">
-            <label>😴 Sommeil (h)</label>
-            <input type="number" id="inp-sleep" step="0.5" min="0" max="14" placeholder="7.5">
-          </div>
-          <div class="field">
-            <label>Qualité sommeil</label>
-            <div class="sleep-stars" id="sleep-stars" style="margin-top:.4rem">
-              <span class="sstar" onclick="setSleep(1)">😩</span>
-              <span class="sstar" onclick="setSleep(2)">😐</span>
-              <span class="sstar" onclick="setSleep(3)">🙂</span>
-              <span class="sstar" onclick="setSleep(4)">😊</span>
-              <span class="sstar" onclick="setSleep(5)">🌟</span>
-            </div>
-          </div>
-          <div class="field field-full">
-            <label>Note</label>
-            <textarea id="inp-note" placeholder="Comment tu te sens…"></textarea>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="addDailyEntry()">Enregistrer la journée</button>
       </div>
+
+      <!-- HIDDEN: chips/dur containers used by JS (also built in modal) -->
+      <div id="chips-container" style="display:none"></div>
+      <div id="dur-panel" style="display:none"><div id="dur-fields"></div></div>
+
+      <!-- RECAP DU JOUR -->
+      <div class="card card-sm" id="today-recap" style="margin-bottom:.9rem;display:none">
+        <div class="card-label" style="margin-bottom:.5rem">📋 Récap du jour</div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:.85rem" id="today-recap-content"></div>
+      </div>
+
+      <!-- BILAN COMPLET (optionnel) -->
+      <details style="margin-bottom:.9rem">
+        <summary style="cursor:pointer;font-size:.82rem;color:var(--muted);padding:.5rem 0;list-style:none;display:flex;align-items:center;gap:.4rem">
+          <span>＋</span> Ajouter note / sommeil / bilan complet
+        </summary>
+        <div class="card" style="margin-top:.6rem">
+          <div class="form-row">
+            <div class="field">
+              <label>😴 Sommeil (h)</label>
+              <input type="number" id="inp-sleep" step="0.5" min="0" max="14" placeholder="7.5">
+            </div>
+            <div class="field">
+              <label>Qualité sommeil</label>
+              <div class="sleep-stars" id="sleep-stars" style="margin-top:.4rem">
+                <span class="sstar" onclick="setSleep(1)">😩</span>
+                <span class="sstar" onclick="setSleep(2)">😐</span>
+                <span class="sstar" onclick="setSleep(3)">🙂</span>
+                <span class="sstar" onclick="setSleep(4)">😊</span>
+                <span class="sstar" onclick="setSleep(5)">🌟</span>
+              </div>
+            </div>
+            <div class="field field-full">
+              <label>Note / ressenti</label>
+              <textarea id="inp-note" placeholder="Comment tu te sens aujourd'hui…"></textarea>
+            </div>
+          </div>
+          <button class="btn btn-secondary" style="font-size:.85rem" onclick="saveSleepNote()">Sauvegarder</button>
+        </div>
+      </details>
 
       <!-- LOG -->
       <div class="card-label" style="margin:1rem 0 .5rem">Historique</div>
@@ -559,12 +627,26 @@ canvas { width: 100% !important; }
     <!-- WEEKLY FORM -->
     <div id="jtab-weekly" style="display:none">
       <div style="font-size:.78rem;color:var(--accent4);background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:var(--r-sm);padding:.65rem .9rem;margin-bottom:.9rem">
-        📅 Mensurations 1×/semaine — le matin à jeun, même jour chaque semaine.
+        📅 1×/semaine — le matin à jeun, même jour chaque semaine.
+      </div>
+      <!-- POIDS HEBDO QUICK -->
+      <div class="card card-sm" style="margin-bottom:.9rem">
+        <div class="card-label" style="margin-bottom:.6rem">⚖️ Pesée de la semaine</div>
+        <div style="display:flex;gap:.6rem;align-items:flex-end">
+          <div class="field" style="flex:1;margin:0">
+            <label>Poids (kg)</label>
+            <input type="number" id="inp-w-weight-quick" step="0.1" placeholder="ex: 108.5" style="font-size:1.1rem">
+          </div>
+          <div class="field" style="flex:1;margin:0">
+            <label>Date</label>
+            <input type="date" id="inp-w-date-quick">
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-bottom:.05rem;white-space:nowrap" onclick="savePoidsHebdo()">✓ Enregistrer</button>
+        </div>
       </div>
       <div class="card">
         <div class="form-row">
           <div class="field"><label>Date</label><input type="date" id="inp-w-date"></div>
-          <div class="field"><label>Poids (kg)</label><input type="number" id="inp-w-weight" step="0.1" placeholder="108.5"></div>
           <div class="field"><label>Tour de taille (cm)</label><input type="number" id="inp-w-waist" step="0.5" placeholder="103"></div>
           <div class="field"><label>Tour de poitrine (cm)</label><input type="number" id="inp-w-chest" step="0.5" placeholder="108"></div>
           <div class="field field-full"><label>Bilan de la semaine</label><textarea id="inp-w-note" placeholder="Énergie, séances, difficultés…"></textarea></div>
@@ -800,6 +882,67 @@ canvas { width: 100% !important; }
 
 </div>
 
+  <!-- ══ MODALS ══════════════════════════════════════════ -->
+
+  <!-- SPORT MODAL -->
+  <div id="modal-sport" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-sport')">
+    <div class="mini-modal">
+      <div class="mini-modal-handle"></div>
+      <div class="mini-modal-title">🏃 Ajouter une séance</div>
+      <div class="card-label" style="margin-bottom:.5rem">Séance</div>
+      <div class="chips" id="modal-chips" style="margin-bottom:.7rem"></div>
+      <div class="dur-panel" id="modal-dur-panel">
+        <div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">⏱ Durée</div>
+        <div class="dur-grid" id="modal-dur-fields"></div>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;margin-top:.5rem;flex-wrap:wrap;margin-bottom:.9rem">
+        <input type="text" id="modal-free-act" placeholder="Autre activité…" style="flex:1;min-width:100px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.5rem .75rem;color:var(--text);font-size:.82rem;outline:none">
+        <input type="number" id="modal-free-dur" placeholder="min" onchange="updateModalCalTarget()" style="width:75px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.5rem .6rem;color:var(--text);font-size:.82rem;outline:none;text-align:center">
+        <span style="font-size:.75rem;color:var(--muted)">≈ <span id="modal-free-kcal" style="color:var(--success)">0</span> kcal</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+        <span style="font-size:.82rem;color:var(--muted)">Calories brûlées estimées :</span>
+        <span style="font-family:var(--font-t);font-size:1.4rem;color:var(--success)" id="modal-sport-kcal">0</span>
+      </div>
+      <button class="btn btn-primary" onclick="saveSeance()">✓ Enregistrer la séance</button>
+    </div>
+  </div>
+
+  <!-- REPAS MODAL -->
+  <div id="modal-repas" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-repas')">
+    <div class="mini-modal">
+      <div class="mini-modal-handle"></div>
+      <div class="mini-modal-title">🍽️ Ajouter un repas</div>
+      <div class="mini-form-row">
+        <div class="field" style="flex:1">
+          <label>Calories (kcal)</label>
+          <input type="number" id="modal-cal" placeholder="ex: 700">
+        </div>
+        <div class="field" style="flex:1">
+          <label>Repas</label>
+          <select id="modal-repas-type" style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .85rem;color:var(--text);font-size:.9rem;outline:none;width:100%;-webkit-appearance:none">
+            <option value="">Type…</option>
+            <option value="Déjeuner">Déjeuner</option>
+            <option value="Dîner">Dîner</option>
+            <option value="Collation">Collation</option>
+            <option value="Petit-déj">Petit-déj</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:.9rem">
+        <label>Description (optionnel)</label>
+        <input type="text" id="modal-repas-desc" placeholder="ex: Bowl poulet riz…">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+        <span style="font-size:.82rem;color:var(--muted)">Total calories du jour :</span>
+        <span style="font-family:var(--font-t);font-size:1.4rem;color:var(--orange)" id="modal-cal-total">0</span>
+      </div>
+      <button class="btn btn-primary" onclick="saveRepas()">✓ Enregistrer le repas</button>
+    </div>
+  </div>
+
+
+
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -915,8 +1058,7 @@ function goTab(tab) {
 // ══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('inp-date').value   = today;
-  document.getElementById('inp-w-date').value = today;
+  ['inp-date','inp-w-date-quick','inp-w-date','modal-weight-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
   document.getElementById('home-date').textContent =
     new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
   buildChips();
@@ -930,7 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // BUILD UI
 // ══════════════════════════════════════════════════════
 function buildChips() {
-  document.getElementById('chips-container').innerHTML =
+  const cc=document.getElementById('chips-container'); if(cc) cc.innerHTML =
     Object.entries(ACTS).map(([id, a]) => `
       <label class="chip">
         <input type="checkbox" id="chk-${id}" onchange="updateCalTarget()">
@@ -1006,8 +1148,9 @@ function updateCalTarget() {
   const active = varIds.filter(isChk);
 
   const panel = document.getElementById('dur-panel');
-  panel.style.display = active.length ? 'block' : 'none';
-  document.getElementById('dur-fields').innerHTML = active.map(id => {
+  if(panel) panel.style.display = 'none'; // hidden — only modal version is visible
+  const dfEl = document.getElementById('dur-fields');
+  if(dfEl) dfEl.innerHTML = active.map(id => {
     const a = ACTS[id]; const dur = getDur(id);
     return `<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
       <span style="font-size:.78rem">${a.label}</span>
@@ -1028,7 +1171,7 @@ function updateCalTarget() {
   const target = calcTarget();
   const hasSport = Object.keys(ACTS).some(isChk) || fd>0;
   const badge = document.getElementById('cal-badge');
-  if (badge) {
+  if (badge && badge.offsetParent !== null) {
     badge.textContent = hasSport ? `Cible : ${target.toLocaleString('fr-FR')} kcal` : `Cible repos : ${target.toLocaleString('fr-FR')} kcal`;
     badge.style.background = hasSport ? 'rgba(110,231,183,0.1)' : 'rgba(122,184,232,0.12)';
     badge.style.color      = hasSport ? 'var(--success)' : 'var(--accent2)';
@@ -1044,6 +1187,224 @@ function setSleep(n) {
   const inp = document.getElementById('inp-sleep');
   if (inp) inp.dataset.quality = n;
   document.querySelectorAll('.sstar').forEach((s,i) => s.classList.toggle('on', i<n));
+}
+
+
+// ══════════════════════════════════════════════════════
+// QUICK LOG — MODALS
+// ══════════════════════════════════════════════════════
+
+// Today helper
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+// Get or create today's entry
+function getTodayEntry() {
+  const today = todayStr();
+  let e = S.daily.find(x => x.date === today);
+  if (!e) {
+    e = { date: today, weight: null, cal: 0, sleep: null, sleepQ: null, note: '', target: CFG.calBase };
+    Object.keys(ACTS).forEach(id => { e[id]=false; });
+  }
+  return JSON.parse(JSON.stringify(e)); // clone
+}
+
+function openModal(type) {
+  const today = todayStr();
+  document.getElementById(`modal-${type}`).style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  if (type === 'sport') {
+    // Build chips in modal
+    document.getElementById('modal-chips').innerHTML =
+      Object.entries(ACTS).map(([id, a]) => `
+        <label class="chip">
+          <input type="checkbox" id="mchk-${id}" onchange="updateModalCalTarget()">
+          ${a.label} <span class="chip-kcal" id="mck-${id}">+${a.fixed?a.kcal:Math.round(a.kmin*a.defMin)}</span>
+        </label>`).join('');
+    updateModalCalTarget();
+  }
+
+  if (type === 'repas') {
+    // Show current day total
+    const e = S.daily.find(x => x.date === today);
+    document.getElementById('modal-cal-total').textContent = e?.cal || 0;
+    document.getElementById('modal-cal').value = '';
+    document.getElementById('modal-repas-desc').value = '';
+  }
+
+  if (type === 'poids') {
+    // poids modal removed
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(event, id) {
+  if (event.target.classList.contains('mini-modal-backdrop')) closeModal(id);
+}
+
+function isModalChk(id) { return !!document.getElementById(`mchk-${id}`)?.checked; }
+function getModalDur(id) { const el=document.getElementById(`mdur-${id}`); return el?(parseInt(el.value)||ACTS[id].defMin):ACTS[id].defMin; }
+
+function updateModalCalTarget() {
+  const varIds = Object.keys(ACTS).filter(id => !ACTS[id].fixed);
+  const active = varIds.filter(isModalChk);
+
+  const panel  = document.getElementById('modal-dur-panel');
+  const fields = document.getElementById('modal-dur-fields');
+  panel.style.display = active.length ? 'block' : 'none';
+  fields.innerHTML = active.map(id => {
+    const a=ACTS[id]; const dur=getModalDur(id);
+    return `<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+      <span style="font-size:.78rem">${a.label}</span>
+      <input type="number" id="mdur-${id}" value="${dur}" min="5" max="120" class="dur-input" onchange="updateModalCalTarget()">
+      <span style="font-size:.7rem;color:var(--muted)">min · <span style="color:var(--success)">${Math.round(a.kmin*getModalDur(id))} kcal</span></span>
+    </div>`;
+  }).join('');
+
+  let totalBurned = 0;
+  Object.keys(ACTS).forEach(id => {
+    if (!isModalChk(id)) return;
+    const a=ACTS[id];
+    const k=a.fixed?a.kcal:Math.round(a.kmin*getModalDur(id));
+    totalBurned+=k;
+    const ck=document.getElementById(`mck-${id}`);
+    if(ck) ck.textContent=`+${k}`;
+  });
+  const fd=parseInt(document.getElementById('modal-free-dur')?.value)||0;
+  const fk=Math.round(8*fd);
+  totalBurned+=fk;
+  const fkEl=document.getElementById('modal-free-kcal');
+  if(fkEl) fkEl.textContent=fk;
+  const kEl=document.getElementById('modal-sport-kcal');
+  if(kEl) kEl.textContent=totalBurned;
+}
+
+
+function savePoidsHebdo() {
+  const weight = parseFloat(document.getElementById('inp-w-weight-quick').value);
+  const date   = document.getElementById('inp-w-date-quick').value;
+  if (!date || isNaN(weight)) { toast('Poids et date requis'); return; }
+  const existing = S.weekly.find(e => e.date === date);
+  if (existing) {
+    existing.weight = weight;
+  } else {
+    upsert(S.weekly, { date, weight, waist: null, chest: null, note: '' });
+  }
+  persist(); renderAll();
+  const qwEl = document.getElementById('inp-w-weight-quick'); if(qwEl) qwEl.value = '';
+  toast(`✓ Poids ${weight} kg enregistré !`);
+}
+
+function saveSeance() {
+  const today = todayStr();
+  const e = getTodayEntry();
+
+  // Merge selected activities
+  Object.keys(ACTS).forEach(id => {
+    if (isModalChk(id)) {
+      e[id] = true;
+      if (!ACTS[id].fixed) e[`${id}_dur`] = getModalDur(id);
+    }
+  });
+  const fa = document.getElementById('modal-free-act')?.value.trim()||null;
+  const fd = parseInt(document.getElementById('modal-free-dur')?.value)||null;
+  if (fa) e.free_activity = fa;
+  if (fd) e.free_duration = fd;
+
+  // Recalc target
+  let t = CFG.calBase;
+  Object.keys(ACTS).forEach(id=>{if(!e[id])return;const a=ACTS[id];t+=a.fixed?a.kcal:Math.round(a.kmin*(e[`${id}_dur`]||a.defMin));});
+  if(e.free_duration) t+=Math.round(8*e.free_duration);
+  e.target = t;
+
+  upsert(S.daily, e); persist(); renderAll();
+  closeModal('modal-sport');
+
+  // Reset modal
+  Object.keys(ACTS).forEach(id=>{const el=document.getElementById(`mchk-${id}`);if(el)el.checked=false;});
+  ['modal-free-act','modal-free-dur'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+
+  // Update badge
+  const acts = Object.keys(ACTS).filter(id=>e[id]);
+  if (acts.length || e.free_activity) {
+    const b = document.getElementById('ql-sport-badge');
+    b.textContent = acts.length + (e.free_activity?1:0) + ' séance(s)';
+    b.style.display = 'block';
+  }
+  toast('✓ Séance enregistrée !');
+}
+
+function saveRepas() {
+  const today = todayStr();
+  const kcal  = parseInt(document.getElementById('modal-cal').value)||0;
+  const desc  = document.getElementById('modal-repas-desc').value.trim();
+  const type  = document.getElementById('modal-repas-type').value;
+  if (!kcal) { toast('Saisis les calories'); return; }
+
+  const e = getTodayEntry();
+  e.cal = (e.cal||0) + kcal;
+  if (desc || type) {
+    const label = [type, desc].filter(Boolean).join(' — ');
+    e.note = e.note ? e.note + ' · ' + label : label;
+  }
+
+  upsert(S.daily, e); persist(); renderAll();
+  closeModal('modal-repas');
+
+  document.getElementById('modal-cal').value = '';
+  document.getElementById('modal-repas-desc').value = '';
+
+  // Update badge
+  const b = document.getElementById('ql-repas-badge');
+  const total = S.daily.find(x=>x.date===today)?.cal||0;
+  b.textContent = total + ' kcal';
+  b.style.display = 'block';
+
+  toast(`✓ +${kcal} kcal ajoutés !`);
+}
+
+
+function saveSleepNote() {
+  const today  = todayStr();
+  const sleep  = parseFloat(document.getElementById('inp-sleep').value)||null;
+  const sleepQ = S.sleepRating||null;
+  const note   = document.getElementById('inp-note').value.trim();
+  const e = getTodayEntry();
+  if (sleep)  e.sleep  = sleep;
+  if (sleepQ) e.sleepQ = sleepQ;
+  if (note)   e.note   = e.note ? e.note + ' · ' + note : note;
+  upsert(S.daily, e); persist(); renderAll();
+  toast('✓ Sauvegardé !');
+}
+
+function updateTodayRecap() {
+  const today = todayStr();
+  const e = S.daily.find(x => x.date === today);
+  const recap = document.getElementById('today-recap');
+  const content = document.getElementById('today-recap-content');
+  if (!e) { recap.style.display='none'; return; }
+
+  const parts = [];
+  if (e.weight) parts.push(`<span style="color:var(--accent2)">⚖️ ${e.weight} kg</span>`);
+  if (e.cal)    parts.push(`<span style="color:var(--orange)">🔥 ${e.cal} kcal</span>`);
+  const acts = Object.keys(ACTS).filter(id=>e[id]);
+  if (acts.length) parts.push(`<span style="color:var(--success)">🏃 ${acts.length} séance(s)</span>`);
+  if (e.sleep)  parts.push(`<span style="color:var(--accent4)">😴 ${e.sleep}h</span>`);
+
+  if (parts.length) {
+    recap.style.display = 'block';
+    content.innerHTML   = parts.join('<span style="color:var(--border)"> · </span>');
+    // Update ql badges
+
+    if (e.cal)    { const b=document.getElementById('ql-repas-badge');  b.textContent=e.cal+' kcal'; b.style.display='block'; }
+    if (acts.length) { const b=document.getElementById('ql-sport-badge'); b.textContent=acts.length+' séance(s)'; b.style.display='block'; }
+  } else {
+    recap.style.display = 'none';
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1071,13 +1432,14 @@ function renderWater() {
 function upsert(arr, e) { const i=arr.findIndex(x=>x.date===e.date); if(i>=0) arr[i]=e; else arr.push(e); arr.sort((a,b)=>a.date.localeCompare(b.date)); }
 
 function addDailyEntry() {
-  const date   = document.getElementById('inp-date').value;
-  const weight = parseFloat(document.getElementById('inp-weight').value);
+  const dateEl = document.getElementById('inp-date');
+  const date   = dateEl ? dateEl.value : todayStr();
+  const weight = parseFloat(document.getElementById('inp-weight')?.value);
   const cal    = parseInt(document.getElementById('inp-cal').value)||null;
   const sleep  = parseFloat(document.getElementById('inp-sleep').value)||null;
   const sleepQ = S.sleepRating||null;
   const note   = document.getElementById('inp-note').value.trim();
-  if (!date||isNaN(weight)) { toast('Date et poids requis'); return; }
+  if (!date) { toast('Date requise'); return; }
 
   const e = { date, weight, cal, sleep, sleepQ, note, target: calcTarget() };
   Object.keys(ACTS).forEach(id => {
@@ -1088,21 +1450,23 @@ function addDailyEntry() {
   e.free_duration = parseInt(document.getElementById('inp-free-dur')?.value)||null;
 
   upsert(S.daily, e); persist(); renderAll();
-  ['inp-weight','inp-cal','inp-sleep','inp-note','inp-free-act','inp-free-dur'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['inp-date','inp-weight','inp-cal','inp-sleep','inp-note','inp-free-act','inp-free-dur'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   Object.keys(ACTS).forEach(id=>{const el=document.getElementById(`chk-${id}`);if(el)el.checked=false;});
   setSleep(0); updateCalTarget();
   toast('✓ Journée enregistrée !');
 }
 
 function addWeeklyEntry() {
-  const date   = document.getElementById('inp-w-date').value;
-  const weight = parseFloat(document.getElementById('inp-w-weight').value);
-  const waist  = parseFloat(document.getElementById('inp-w-waist').value)||null;
-  const chest  = parseFloat(document.getElementById('inp-w-chest').value)||null;
-  const note   = document.getElementById('inp-w-note').value.trim();
-  if (!date||isNaN(weight)) { toast('Date et poids requis'); return; }
-  upsert(S.weekly, {date,weight,waist,chest,note}); persist(); renderAll();
-  ['inp-w-weight','inp-w-waist','inp-w-chest','inp-w-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const date  = document.getElementById('inp-w-date').value;
+  const waist = parseFloat(document.getElementById('inp-w-waist').value)||null;
+  const chest = parseFloat(document.getElementById('inp-w-chest').value)||null;
+  const note  = document.getElementById('inp-w-note').value.trim();
+  if (!date) { toast('Date requise'); return; }
+  // Merge with existing entry to preserve weight set via quick card
+  const existing = S.weekly.find(e=>e.date===date)||{};
+  upsert(S.weekly, { date, weight: existing.weight||null, waist, chest, note });
+  persist(); renderAll();
+  ['inp-w-waist','inp-w-chest','inp-w-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   toast('✓ Bilan semaine enregistré !');
 }
 
@@ -1133,6 +1497,7 @@ function renderAll() {
   renderHome();
   renderLogs();
   updateExportStatus();
+  updateTodayRecap();
   const start = new Date(CFG.startDate+'T12:00:00');
   const diff  = Math.floor((Date.now()-start)/86400000);
   const week  = Math.min(13,Math.max(1,Math.floor(diff/7)+1));
@@ -1297,7 +1662,7 @@ function saveApiKey() {
 function clearApiKey() {
   if(!confirm('Effacer la clé API ?'))return;
   localStorage.removeItem('pdc_api_key');
-  document.getElementById('api-key-input').value='';
+  const akEl = document.getElementById('api-key-input'); if(akEl) akEl.value='';
   updateApiStatus(); toast('Clé effacée.');
 }
 
@@ -1348,7 +1713,7 @@ function handlePhoto(e) {
 
 function resetPhoto() {
   photoB64=null;
-  document.getElementById('photo-input').value='';
+  const piEl = document.getElementById('photo-input'); if(piEl) piEl.value='';
   document.getElementById('upload-zone').style.display='block';
   document.getElementById('photo-preview').style.display='none';
   document.getElementById('photo-result').style.display='none';
