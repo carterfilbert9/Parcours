@@ -375,6 +375,76 @@ canvas { width: 100% !important; }
 }
 .mini-form-row { display: flex; gap: .6rem; margin-bottom: .7rem; align-items: flex-end; flex-wrap: wrap; }
 
+
+/* ── REPAS FAVORIS & RECHERCHE ──────────────────────── */
+.search-bar {
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: var(--r-pill); padding: .5rem .9rem;
+  margin-bottom: .8rem; transition: border-color .2s;
+}
+.search-bar:focus-within { border-color: var(--accent); }
+.search-bar input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-size: .9rem;
+}
+.search-results { margin-bottom: .8rem; }
+.search-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .6rem .8rem; border-radius: var(--r-sm);
+  background: var(--card2); margin-bottom: .4rem;
+  cursor: pointer; transition: background .15s;
+}
+.search-item:hover { background: rgba(232,201,122,0.07); }
+.search-item-name { font-size: .88rem; font-weight: 500; }
+.search-item-cal  { font-size: .78rem; color: var(--accent); font-weight: 600; }
+.search-item-unit { font-size: .72rem; color: var(--muted); }
+
+.favs-section { margin-bottom: .8rem; }
+.fav-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .65rem .9rem; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--card);
+  margin-bottom: .4rem;
+}
+.fav-item-left { display: flex; flex-direction: column; gap: .1rem; }
+.fav-item-name { font-size: .88rem; font-weight: 500; }
+.fav-item-meta { font-size: .72rem; color: var(--muted); }
+.fav-item-right { display: flex; align-items: center; gap: .5rem; }
+.fav-kcal { font-family: var(--font-t); font-size: 1.2rem; color: var(--accent); }
+.btn-fav-add {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: none; background: rgba(110,231,183,0.12);
+  color: var(--success); font-size: 1.1rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .2s; flex-shrink: 0;
+}
+.btn-fav-add:hover { background: rgba(110,231,183,0.25); }
+.btn-fav-del {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: none; color: var(--muted);
+  font-size: .85rem; cursor: pointer; transition: color .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-fav-del:hover { color: var(--danger); }
+.save-fav-row {
+  display: flex; gap: .5rem; align-items: center;
+  margin-top: .6rem; flex-wrap: wrap;
+}
+.save-fav-btn {
+  flex-shrink: 0; padding: .4rem .8rem; border-radius: var(--r-pill);
+  border: 1px solid var(--border); background: none;
+  color: var(--muted); font-size: .78rem; cursor: pointer; transition: all .2s;
+}
+.save-fav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tabs-mini { display: flex; gap: .4rem; margin-bottom: .8rem; }
+.tab-mini {
+  flex: 1; padding: .45rem; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: none;
+  color: var(--muted); font-size: .8rem; cursor: pointer; transition: all .2s;
+}
+.tab-mini.active { background: var(--card2); color: var(--text); border-color: var(--accent2); }
+
 /* ── TOAST ──────────────────────────────────────────── */
 #toast {
   position: fixed; bottom: calc(var(--nav-h) + var(--safe-b) + .8rem);
@@ -913,31 +983,73 @@ canvas { width: 100% !important; }
     <div class="mini-modal">
       <div class="mini-modal-handle"></div>
       <div class="mini-modal-title">🍽️ Ajouter un repas</div>
-      <div class="mini-form-row">
-        <div class="field" style="flex:1">
-          <label>Calories (kcal)</label>
-          <input type="number" id="modal-cal" placeholder="ex: 700">
+
+      <!-- TABS -->
+      <div class="tabs-mini">
+        <button class="tab-mini active" id="rtab-btn-search" onclick="switchRepasModalTab('search')">🔍 Recherche</button>
+        <button class="tab-mini" id="rtab-btn-favs" onclick="switchRepasModalTab('favs')">⭐ Favoris</button>
+        <button class="tab-mini" id="rtab-btn-manual" onclick="switchRepasModalTab('manual')">✏️ Manuel</button>
+      </div>
+
+      <!-- SEARCH TAB -->
+      <div id="rtab-search">
+        <div class="search-bar">
+          <span style="font-size:.9rem">🔍</span>
+          <input type="text" id="food-search-input" placeholder="Rechercher un aliment…" oninput="searchFood(this.value)">
+          <span style="font-size:.75rem;color:var(--muted)" id="food-search-qty-lbl">100g</span>
         </div>
-        <div class="field" style="flex:1">
-          <label>Repas</label>
-          <select id="modal-repas-type" style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .85rem;color:var(--text);font-size:.9rem;outline:none;width:100%;-webkit-appearance:none">
-            <option value="">Type…</option>
-            <option value="Déjeuner">Déjeuner</option>
-            <option value="Dîner">Dîner</option>
-            <option value="Collation">Collation</option>
-            <option value="Petit-déj">Petit-déj</option>
-          </select>
+        <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
+          <span style="font-size:.75rem;color:var(--muted);align-self:center">Quantité :</span>
+          <input type="number" id="food-search-qty" value="100" min="1" max="2000" onchange="searchFood(document.getElementById('food-search-input').value)" style="width:70px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.35rem .5rem;color:var(--text);font-size:.85rem;outline:none;text-align:center">
+          <span style="font-size:.75rem;color:var(--muted);align-self:center">g / ml</span>
+        </div>
+        <div class="search-results" id="search-results">
+          <div style="font-size:.8rem;color:var(--muted);text-align:center;padding:.8rem">Tape un aliment pour rechercher</div>
         </div>
       </div>
-      <div class="field" style="margin-bottom:.9rem">
-        <label>Description (optionnel)</label>
-        <input type="text" id="modal-repas-desc" placeholder="ex: Bowl poulet riz…">
+
+      <!-- FAVS TAB -->
+      <div id="rtab-favs" style="display:none">
+        <div class="favs-section" id="favs-list">
+          <div style="font-size:.8rem;color:var(--muted);text-align:center;padding:1rem">
+            Aucun favori encore.<br>Ajoute tes repas récurrents depuis l'onglet Manuel.
+          </div>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
-        <span style="font-size:.82rem;color:var(--muted)">Total calories du jour :</span>
-        <span style="font-family:var(--font-t);font-size:1.4rem;color:var(--orange)" id="modal-cal-total">0</span>
+
+      <!-- MANUAL TAB -->
+      <div id="rtab-manual" style="display:none">
+        <div class="mini-form-row">
+          <div class="field" style="flex:1">
+            <label>Calories (kcal)</label>
+            <input type="number" id="modal-cal" placeholder="ex: 700">
+          </div>
+          <div class="field" style="flex:1">
+            <label>Type</label>
+            <select id="modal-repas-type" style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .85rem;color:var(--text);font-size:.9rem;outline:none;width:100%;-webkit-appearance:none">
+              <option value="">Type…</option>
+              <option value="Déjeuner">Déjeuner</option>
+              <option value="Dîner">Dîner</option>
+              <option value="Collation">Collation</option>
+              <option value="Petit-déj">Petit-déj</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:.5rem">
+          <label>Nom du repas (optionnel)</label>
+          <input type="text" id="modal-repas-desc" placeholder="ex: Bowl poulet riz…">
+        </div>
+        <div class="save-fav-row">
+          <button class="save-fav-btn" onclick="saveAsFavorite()">⭐ Sauvegarder en favori</button>
+        </div>
+        <div style="height:.8rem"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+          <span style="font-size:.82rem;color:var(--muted)">Total du jour :</span>
+          <span style="font-family:var(--font-t);font-size:1.4rem;color:var(--orange)" id="modal-cal-total">0</span>
+        </div>
+        <button class="btn btn-primary" onclick="saveRepas()">✓ Enregistrer</button>
       </div>
-      <button class="btn btn-primary" onclick="saveRepas()">✓ Enregistrer le repas</button>
+
     </div>
   </div>
 
@@ -974,7 +1086,7 @@ const MEALS = {
   dejeuner: [
     { name:'Bowl Poulet Riz',    time:'12 min', kcal:700, prot:'45g', ing:`200g poulet poêlé · 150g riz · légumes surgelés · sauce soja`, tip:`Prépare le riz en avance — 5 min au micro le midi` },
     { name:'Pasta Thon',         time:'12 min', kcal:680, prot:'42g', ing:`200g pâtes complètes · 1 boîte thon · tomates cerises · huile d'olive`, tip:`Zéro cuisson côté protéines` },
-    { name:'Omelette Complète',  time:'8 min',  kcal:580, prot:'44g', ing:`4 œufs · 60g jambon · champignons · fromage râpé · salade`, tip:`Le repas le plus rapide et protéiné` },
+    { name:'Omelette Complète',  time:'8 min',  kcal:580, prot:'44g', ing:`4 oeufs · 60g jambon · champignons · fromage râpé · salade`, tip:`Le repas le plus rapide et protéiné` },
     { name:'Wrap Dinde Avocat',  time:'5 min',  kcal:620, prot:'38g', ing:`2 tortillas · 140g dinde · ½ avocat · salade · fromage frais`, tip:`Aucune cuisson — idéal midi pressé` },
     { name:'Riz Saumon Épinards',time:'15 min', kcal:720, prot:'48g', ing:`180g saumon · 150g riz · épinards surgelés · citron + soja`, tip:`Riche en oméga-3 — récup post-sport` },
     { name:'Haché Lentilles',    time:'15 min', kcal:710, prot:'46g', ing:`160g haché 5% · 1 boîte lentilles · tomates · cumin + paprika`, tip:`Rassasiant jusqu'au soir` },
@@ -985,26 +1097,26 @@ const MEALS = {
     { name:'Crevettes Wok',       time:'10 min', kcal:640, prot:'42g', ing:`220g crevettes · légumes wok surgelés · nouilles soba · sauce huître`, tip:`10 min chrono — dîner de flemme sain` },
     { name:'Poulet Rôti Légumes', time:'25 min', kcal:700, prot:'50g', ing:`220g poulet · courgettes + poivrons au four · herbes · ail`, tip:`Tout au four — 0 surveillance` },
     { name:'Cabillaud Riz Complet',time:'15 min',kcal:580, prot:'48g', ing:`200g cabillaud poêlé · 120g riz complet · épinards ail + citron`, tip:`Peu calorique pour grande quantité` },
-    { name:'Œufs Cocotte Épinards',time:'15 min',kcal:520, prot:'38g', ing:`4 œufs · épinards surgelés · crème légère · fromage râpé · pain complet`, tip:`Le dîner "frigo vide"` },
+    { name:"Oeufs Cocotte Épinards",time:'15 min',kcal:520, prot:'38g', ing:`4 oeufs · épinards surgelés · crème légère · fromage râpé · pain complet`, tip:`Le dîner "frigo vide"` },
   ],
   collation: [
     { name:'Yaourt Grec + Amandes',  time:'1 min',  kcal:280, prot:'18g', ing:`200g yaourt grec 0% · 20g amandes · miel optionnel`, tip:`1h avant séance` },
     { name:'Fromage Blanc Fruits',   time:'2 min',  kcal:220, prot:'22g', ing:`250g fromage blanc 0% · fruits rouges · stevia`, tip:`Coupe les envies sucrées` },
-    { name:'2 Œufs Durs',            time:'10 min', kcal:160, prot:'14g', ing:`2 œufs durs · sel + poivre · paprika fumé`, tip:`Prépare 6 œufs le dimanche` },
+    { name:"2 Oeufs Durs",            time:'10 min', kcal:160, prot:'14g', ing:`2 oeufs durs · sel + poivre · paprika fumé`, tip:`Prépare 6 oeufs le dimanche` },
     { name:'Tartine Thon',           time:'3 min',  kcal:300, prot:'24g', ing:`2 tranches pain complet · thon · fromage frais · herbes`, tip:`Post-sport idéal` },
     { name:'Cottage Cheese Tomates', time:'2 min',  kcal:180, prot:'20g', ing:`200g cottage cheese · tomates cerises · basilic`, tip:`Léger si dîner copieux` },
     { name:'Banane + Beurre Cacahuète',time:'1 min',kcal:320, prot:'8g',  ing:`1 banane · 1 c.à.s beurre cacahuète sans sucre`, tip:`Pré-séance intensive` },
   ],
   weekend: [
-    { name:'Récup Post-Futsal',      time:'10 min', kcal:550, prot:'35g', ing:`200g yaourt grec · 60g flocons avoine · 1 banane · miel · 2 œufs brouillés`, tip:`Dimanche matin après le futsal` },
-    { name:'Pancakes Protéinés',     time:'15 min', kcal:480, prot:'32g', ing:`3 œufs · 1 banane · 40g flocons avoine mixés · fruits rouges`, tip:`0 farine — ne casse pas le régime` },
-    { name:'Œufs Bénédict Light',    time:'12 min', kcal:520, prot:'34g', ing:`2 œufs pochés · pain complet · 80g saumon fumé · avocat · citron`, tip:`Le petit-déj plaisir dans les clous` },
+    { name:'Récup Post-Futsal',      time:'10 min', kcal:550, prot:'35g', ing:`200g yaourt grec · 60g flocons avoine · 1 banane · miel · 2 oeufs brouillés`, tip:`Dimanche matin après le futsal` },
+    { name:'Pancakes Protéinés',     time:'15 min', kcal:480, prot:'32g', ing:`3 oeufs · 1 banane · 40g flocons avoine mixés · fruits rouges`, tip:`0 farine — ne casse pas le régime` },
+    { name:"Oeufs Bénédict Light",    time:'12 min', kcal:520, prot:'34g', ing:`2 oeufs pochés · pain complet · 80g saumon fumé · avocat · citron`, tip:`Le petit-déj plaisir dans les clous` },
     { name:'Bowl Smoothie Protéiné', time:'5 min',  kcal:420, prot:'28g', ing:`200g fromage blanc · fruits rouges mixés · 30g granola · chia`, tip:`5 min, sans cuisson` },
   ],
 };
 
 const SHOP = [
-  { title:'🥩 Protéines animales', color:'var(--success)', items:[['Blancs de poulet','~25g/100g'],['Œufs (x18)','6g/œuf'],['Thon en boîte','26g/100g'],['Saumon','20g/100g'],['Steak haché 5%','21g/100g'],['Crevettes surgelées','18g/100g'],['Cabillaud','18g/100g'],['Blanc de dinde','24g/100g']] },
+  { title:'🥩 Protéines animales', color:'var(--success)', items:[['Blancs de poulet','~25g/100g'],["Oeufs (x18)","6g/oeuf"],['Thon en boîte','26g/100g'],['Saumon','20g/100g'],['Steak haché 5%','21g/100g'],['Crevettes surgelées','18g/100g'],['Cabillaud','18g/100g'],['Blanc de dinde','24g/100g']] },
   { title:'🥛 Protéines laitières', color:'var(--accent3)', items:[['Fromage blanc 0%','8g/100g'],['Yaourt grec 0%','10g/100g'],['Cottage cheese','11g/100g'],['Fromage frais léger','7g/100g']] },
   { title:'🌾 Glucides lents', color:'var(--accent)', items:[['Riz basmati','Base'],['Pâtes complètes','IG bas'],['Patate douce','IG moyen'],["Flocons d'avoine",'WE'],['Pain complet','Collation'],['Lentilles boîte','Prot+glucides']] },
   { title:'🥦 Légumes surgelés', color:'var(--accent2)', items:[['Mélange wok','Polyvalent'],['Épinards','Fer+fibres'],['Brocolis','Fibres'],['Haricots verts','Rapide'],['Tomates cerises','Frais']] },
@@ -1225,11 +1337,16 @@ function openModal(type) {
   }
 
   if (type === 'repas') {
-    // Show current day total
     const e = S.daily.find(x => x.date === today);
-    document.getElementById('modal-cal-total').textContent = e?.cal || 0;
-    document.getElementById('modal-cal').value = '';
-    document.getElementById('modal-repas-desc').value = '';
+    const totEl = document.getElementById('modal-cal-total');
+    if (totEl) totEl.textContent = e?.cal || 0;
+    const calEl = document.getElementById('modal-cal');
+    if (calEl) calEl.value = '';
+    const descEl = document.getElementById('modal-repas-desc');
+    if (descEl) descEl.value = '';
+    // Default to search tab
+    switchRepasModalTab('search');
+    setTimeout(() => document.getElementById('food-search-input')?.focus(), 100);
   }
 
   if (type === 'poids') {
@@ -1405,6 +1522,194 @@ function updateTodayRecap() {
   } else {
     recap.style.display = 'none';
   }
+}
+
+
+// ══════════════════════════════════════════════════════
+// FOOD DATABASE & FAVORITES
+// ══════════════════════════════════════════════════════
+const FOOD_DB = [
+  // Protéines
+  {n:'Blanc de poulet',    k:165, u:'g'},
+  {n:'Blanc de dinde',     k:135, u:'g'},
+  {n:'Steak haché 5%',     k:121, u:'g'},
+  {n:"Steak boeuf",         k:172, u:'g'},
+  {n:'Saumon',             k:208, u:'g'},
+  {n:'Cabillaud',          k:82,  u:'g'},
+  {n:'Crevettes',          k:99,  u:'g'},
+  {n:'Thon en boîte',      k:116, u:'g'},
+  {n:'Saumon fumé',        k:117, u:'g'},
+  {n:'Jambon blanc',       k:107, u:'g'},
+  {n:"Oeuf entier",         k:155, u:'g'},
+  {n:"Blanc d'oeuf",       k:52,  u:'g'},
+  // Laitiers
+  {n:'Fromage blanc 0%',   k:45,  u:'g'},
+  {n:'Yaourt grec 0%',     k:57,  u:'g'},
+  {n:'Cottage cheese',     k:98,  u:'g'},
+  {n:'Fromage râpé',       k:392, u:'g'},
+  {n:'Lait demi-écrémé',   k:46,  u:'ml'},
+  // Glucides
+  {n:'Riz cuit',           k:130, u:'g'},
+  {n:'Pâtes complètes cuites',k:149,u:'g'},
+  {n:'Patate douce cuite', k:86,  u:'g'},
+  {n:'Pomme de terre cuite',k:87, u:'g'},
+  {n:'Pain complet',       k:247, u:'g'},
+  {n:'Tortilla blé',       k:299, u:'g'},
+  {n:"Flocons d'avoine",  k:379, u:'g'},
+  {n:'Lentilles cuites',   k:116, u:'g'},
+  {n:'Pois chiches cuits', k:164, u:'g'},
+  // Légumes
+  {n:'Épinards',           k:23,  u:'g'},
+  {n:'Brocolis',           k:34,  u:'g'},
+  {n:'Haricots verts',     k:31,  u:'g'},
+  {n:'Courgette',          k:17,  u:'g'},
+  {n:'Tomate',             k:18,  u:'g'},
+  {n:'Champignons',        k:22,  u:'g'},
+  {n:'Poivron',            k:31,  u:'g'},
+  {n:'Salade verte',       k:15,  u:'g'},
+  {n:'Concombre',          k:12,  u:'g'},
+  // Fruits
+  {n:'Banane',             k:89,  u:'g'},
+  {n:'Pomme',              k:52,  u:'g'},
+  {n:'Orange',             k:47,  u:'g'},
+  {n:'Fruits rouges',      k:45,  u:'g'},
+  // Lipides
+  {n:'Avocat',             k:160, u:'g'},
+  {n:"Huile d'olive",     k:884, u:'ml'},
+  {n:'Amandes',            k:579, u:'g'},
+  {n:'Noix',               k:654, u:'g'},
+  {n:'Beurre de cacahuète',k:588, u:'g'},
+  // Sauces & autres
+  {n:'Sauce soja',         k:60,  u:'ml'},
+  {n:'Moutarde',           k:70,  u:'g'},
+  {n:'Fromage frais',      k:120, u:'g'},
+  {n:'Crème fraîche légère',k:190,u:'g'},
+  // Boissons
+  {n:"Lait d'amande",     k:25,  u:'ml'},
+  {n:"Jus d'orange",      k:45,  u:'ml'},
+];
+
+let S_FAVS = safeGet('pdc_favs', []);
+function saveFavs() { try { localStorage.setItem('pdc_favs', JSON.stringify(S_FAVS)); } catch(e) {} }
+
+function switchRepasModalTab(tab) {
+  ['search','favs','manual'].forEach(t => {
+    document.getElementById(`rtab-${t}`).style.display = t===tab ? 'block' : 'none';
+    document.getElementById(`rtab-btn-${t}`).classList.toggle('active', t===tab);
+  });
+  if (tab==='favs') renderFavsList();
+}
+
+function searchFood(query) {
+  const qty     = parseInt(document.getElementById('food-search-qty')?.value) || 100;
+  const results = document.getElementById('search-results');
+  if (!results) return;
+
+  if (!query || query.length < 2) {
+    results.innerHTML = `<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:.8rem">Tape un aliment pour rechercher</div>`;
+    return;
+  }
+
+  const q   = query.toLowerCase();
+  const hits = FOOD_DB.filter(f => f.n.toLowerCase().includes(q)).slice(0, 8);
+
+  if (!hits.length) {
+    results.innerHTML = `<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:.8rem">Aucun résultat — essaie l'onglet Manuel</div>`;
+    return;
+  }
+
+  results.innerHTML = hits.map(f => {
+    const kcal = Math.round(f.k * qty / 100);
+    return `<div class="search-item" onclick="selectFood('${f.n.replace(/'/g,"\'")}',${kcal},${qty},'${f.u}')">
+      <div>
+        <div class="search-item-name">${f.n}</div>
+        <div class="search-item-unit">${qty} ${f.u} · ${f.k} kcal/100${f.u}</div>
+      </div>
+      <div class="search-item-cal">${kcal} kcal</div>
+    </div>`;
+  }).join('');
+}
+
+function selectFood(name, kcal, qty, unit) {
+  // Add directly to today's log
+  const today = todayStr();
+  const e = getTodayEntry();
+  e.cal = (e.cal||0) + kcal;
+  const label = `${name} (${qty}${unit})`;
+  e.note = e.note ? e.note + ' · ' + label : label;
+  upsert(S.daily, e); persist(); renderAll();
+
+  // Update modal total
+  const totEl = document.getElementById('modal-cal-total');
+  if (totEl) totEl.textContent = S.daily.find(x=>x.date===today)?.cal||0;
+
+  // Update badge
+  const b = document.getElementById('ql-repas-badge');
+  if (b) { b.textContent = (S.daily.find(x=>x.date===today)?.cal||0)+' kcal'; b.style.display='block'; }
+
+  toast(`✓ ${name} +${kcal} kcal`);
+
+  // Clear search
+  const inp = document.getElementById('food-search-input');
+  if (inp) inp.value = '';
+  const res = document.getElementById('search-results');
+  if (res) res.innerHTML = `<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:.8rem">Tape un aliment pour rechercher</div>`;
+}
+
+function saveAsFavorite() {
+  const kcal = parseInt(document.getElementById('modal-cal')?.value)||0;
+  const name = document.getElementById('modal-repas-desc')?.value.trim();
+  const type = document.getElementById('modal-repas-type')?.value;
+  if (!kcal || !name) { toast('Remplis les calories et le nom'); return; }
+  const fav = { id: Date.now(), name, kcal, type: type||'' };
+  S_FAVS.push(fav); saveFavs();
+  toast(`⭐ "${name}" ajouté aux favoris`);
+}
+
+function renderFavsList() {
+  const el = document.getElementById('favs-list');
+  if (!el) return;
+  if (!S_FAVS.length) {
+    el.innerHTML = `<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:1rem">
+      Aucun favori encore.<br>Ajoute tes repas récurrents depuis l'onglet Manuel.
+    </div>`;
+    return;
+  }
+  el.innerHTML = S_FAVS.map(f => `
+    <div class="fav-item">
+      <div class="fav-item-left">
+        <div class="fav-item-name">${f.name}</div>
+        <div class="fav-item-meta">${f.type||'Repas'}</div>
+      </div>
+      <div class="fav-item-right">
+        <div class="fav-kcal">${f.kcal}</div>
+        <div style="font-size:.72rem;color:var(--muted)">kcal</div>
+        <button class="btn-fav-add" onclick="addFavToLog(${f.id})">+</button>
+        <button class="btn-fav-del" onclick="deleteFav(${f.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function addFavToLog(id) {
+  const fav   = S_FAVS.find(f => f.id===id);
+  if (!fav) return;
+  const today = todayStr();
+  const e     = getTodayEntry();
+  e.cal  = (e.cal||0) + fav.kcal;
+  e.note = e.note ? e.note + ' · ' + fav.name : fav.name;
+  upsert(S.daily, e); persist(); renderAll();
+
+  const totEl = document.getElementById('modal-cal-total');
+  if (totEl) totEl.textContent = S.daily.find(x=>x.date===today)?.cal||0;
+  const b = document.getElementById('ql-repas-badge');
+  if (b) { b.textContent=(S.daily.find(x=>x.date===today)?.cal||0)+' kcal'; b.style.display='block'; }
+
+  toast(`✓ ${fav.name} +${fav.kcal} kcal`);
+}
+
+function deleteFav(id) {
+  S_FAVS = S_FAVS.filter(f => f.id!==id); saveFavs(); renderFavsList();
+  toast('Favori supprimé');
 }
 
 // ══════════════════════════════════════════════════════
