@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Mon Parcours</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ── TOKENS ─────────────────────────────────────────── */
@@ -321,6 +322,51 @@ canvas { width: 100% !important; }
 .dur-input { width: 60px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: .3rem .4rem; color: var(--text); font-size: .8rem; outline: none; text-align: center; }
 
 
+
+/* ── AUTH SCREEN ────────────────────────────────────── */
+.auth-screen {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(232,201,122,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(122,184,232,0.05) 0%, transparent 60%);
+}
+.auth-logo { font-family: var(--font-t); font-size: 3rem; color: var(--accent); margin-bottom: .3rem; letter-spacing: .05em; }
+.auth-sub { font-size: .85rem; color: var(--muted); margin-bottom: 2.5rem; text-align: center; }
+.auth-card { width: 100%; max-width: 360px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 1.5rem; }
+.auth-tabs { display: flex; background: var(--card2); border-radius: var(--r-pill); padding: .2rem; margin-bottom: 1.2rem; }
+.auth-tab { flex: 1; padding: .45rem; border-radius: var(--r-pill); border: none; background: none; color: var(--muted); font-size: .85rem; font-weight: 500; cursor: pointer; transition: all .2s; }
+.auth-tab.active { background: var(--card); color: var(--text); }
+.auth-field { margin-bottom: .8rem; }
+.auth-field label { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .35rem; }
+.auth-field input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: .7rem .9rem; color: var(--text); font-size: .95rem; outline: none; transition: border-color .2s; -webkit-appearance: none; }
+.auth-field input:focus { border-color: var(--accent); }
+.btn-google { width: 100%; padding: .8rem; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: .9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .6rem; margin-bottom: .7rem; transition: background .2s; }
+.btn-google:hover { background: rgba(255,255,255,0.05); }
+.auth-divider { display: flex; align-items: center; gap: .8rem; margin: .8rem 0; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.auth-divider span { font-size: .75rem; color: var(--muted); }
+.auth-error { font-size: .8rem; color: var(--danger); background: rgba(248,113,113,0.1); border-radius: var(--r-sm); padding: .6rem .8rem; margin-bottom: .8rem; display: none; }
+.auth-loading { display: flex; align-items: center; justify-content: center; gap: .6rem; color: var(--muted); font-size: .88rem; padding: 1rem; }
+
+/* ── ONBOARDING ─────────────────────────────────────── */
+.onboarding-screen {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg); overflow-y: auto;
+  padding: 2rem 1.2rem calc(2rem + var(--safe-b));
+}
+.onboarding-step { display: none; max-width: 400px; margin: 0 auto; }
+.onboarding-step.active { display: block; }
+.onboarding-title { font-family: var(--font-t); font-size: 2rem; color: var(--accent); margin-bottom: .3rem; }
+.onboarding-sub { font-size: .85rem; color: var(--muted); margin-bottom: 2rem; }
+.onboarding-progress { display: flex; gap: .4rem; margin-bottom: 2rem; }
+.op-dot { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background .3s; }
+.op-dot.done { background: var(--accent); }
+.user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--card2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1rem; }
+
 /* ── QUICK LOG ──────────────────────────────────────── */
 .quick-log {
   display: grid;
@@ -505,6 +551,155 @@ canvas { width: 100% !important; }
 </head>
 <body>
 
+
+<!-- ══ AUTH SCREEN ════════════════════════════════════ -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-logo">Mon Parcours</div>
+  <div class="auth-sub">Ton compagnon transformation</div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Connexion</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Inscription</button>
+    </div>
+
+    <div id="auth-error" class="auth-error"></div>
+    <div id="auth-loading" class="auth-loading" style="display:none"><div class="spinner"></div> Connexion en cours…</div>
+
+    <!-- Google -->
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuer avec Google
+    </button>
+
+    <div class="auth-divider"><span>ou</span></div>
+
+    <!-- Email/Password -->
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="ton@email.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Mot de passe</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="auth-field" id="auth-name-field" style="display:none">
+      <label>Ton prénom</label>
+      <input type="text" id="auth-name" placeholder="ex: Carter">
+    </div>
+
+    <button class="btn btn-primary" id="auth-submit-btn" onclick="submitAuth()" style="margin-top:.4rem">Se connecter</button>
+  </div>
+</div>
+
+<!-- ══ ONBOARDING ══════════════════════════════════════ -->
+<div class="onboarding-screen" id="onboarding-screen" style="display:none">
+  <div class="onboarding-progress" style="max-width:400px;margin:0 auto 0">
+    <div class="op-dot done" id="op1"></div>
+    <div class="op-dot" id="op2"></div>
+    <div class="op-dot" id="op3"></div>
+  </div>
+
+  <!-- STEP 1 : Profil -->
+  <div class="onboarding-step active" id="ob-step1">
+    <div style="max-width:400px;margin:0 auto">
+      <div class="onboarding-title">Bienvenue 👋</div>
+      <div class="onboarding-sub">Configurons ton profil en 2 minutes</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="field field-full">
+            <label>Ton prénom</label>
+            <input type="text" id="ob-name" placeholder="ex: Carter">
+          </div>
+          <div class="field">
+            <label>Poids actuel (kg)</label>
+            <input type="number" id="ob-weight" step="0.1" placeholder="ex: 110">
+          </div>
+          <div class="field">
+            <label>Objectif (kg)</label>
+            <input type="number" id="ob-goal" step="0.1" placeholder="ex: 95">
+          </div>
+          <div class="field">
+            <label>Tour de taille (cm)</label>
+            <input type="number" id="ob-waist" step="0.5" placeholder="ex: 105">
+          </div>
+          <div class="field">
+            <label>Tour de poitrine (cm)</label>
+            <input type="number" id="ob-chest" step="0.5" placeholder="ex: 110">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="obNext(1)">Continuer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 : Objectif calorique -->
+  <div class="onboarding-step" id="ob-step2">
+    <div style="max-width:400px;margin:0 auto">
+      <div class="onboarding-title">Ton objectif</div>
+      <div class="onboarding-sub">On calcule ta cible calorique</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="field">
+            <label>Age</label>
+            <input type="number" id="ob-age" placeholder="ex: 34">
+          </div>
+          <div class="field">
+            <label>Taille (cm)</label>
+            <input type="number" id="ob-height" placeholder="ex: 180">
+          </div>
+          <div class="field field-full">
+            <label>Niveau activité</label>
+            <select id="ob-activity" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.65rem .85rem;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none">
+              <option value="1.2">Sédentaire (bureau, peu de sport)</option>
+              <option value="1.4" selected>Légèrement actif (1-2 sport/sem)</option>
+              <option value="1.55">Modérément actif (3-5 sport/sem)</option>
+              <option value="1.725">Très actif (sport intense quotidien)</option>
+            </select>
+          </div>
+        </div>
+        <div id="ob-cal-result" style="background:var(--card2);border-radius:var(--r-sm);padding:.9rem;margin-bottom:.9rem;display:none">
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:.3rem">CIBLE CALORIQUE CALCULÉE</div>
+          <div style="font-family:var(--font-t);font-size:2rem;color:var(--accent)" id="ob-cal-value">—</div>
+          <div style="font-size:.75rem;color:var(--muted)" id="ob-cal-detail">kcal/jour</div>
+        </div>
+        <button class="btn btn-secondary" style="margin-bottom:.6rem" onclick="calcObCal()">Calculer ma cible</button>
+        <button class="btn btn-primary" onclick="obNext(2)">Continuer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 : Protocole -->
+  <div class="onboarding-step" id="ob-step3">
+    <div style="max-width:400px;margin:0 auto">
+      <div class="onboarding-title">Presque prêt !</div>
+      <div class="onboarding-sub">Quelques infos sur ta routine</div>
+      <div class="card">
+        <div class="field" style="margin-bottom:.9rem">
+          <label>Protocole alimentaire</label>
+          <select id="ob-protocol" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.65rem .85rem;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none">
+            <option value="standard">Standard (3 repas/jour)</option>
+            <option value="ji16">Jeûne intermittent 16/8</option>
+            <option value="ji18">Jeûne intermittent 18/6</option>
+            <option value="omad">OMAD (1 repas/jour)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:.9rem">
+          <label>Objectif principal</label>
+          <select id="ob-goal-type" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.65rem .85rem;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none">
+            <option value="loss">Perte de poids</option>
+            <option value="maintain">Maintien</option>
+            <option value="muscle">Prise de muscle</option>
+            <option value="sport">Performance sportive</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="obFinish()">Commencer mon parcours 🚀</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div class="app-shell">
 
   <!-- ══ PAGE: ACCUEIL ══════════════════════════════════ -->
@@ -663,7 +858,7 @@ canvas { width: 100% !important; }
     <div id="jtab-daily">
 
       <!-- QUICK LOG -->
-      <div class="quick-log">
+      <div class="quick-log" style="grid-template-columns:1fr 1fr 1fr">
         <button class="ql-btn sport" onclick="openModal('sport')">
           <div class="ql-icon">🏃</div>
           <div>Séance</div>
@@ -676,7 +871,12 @@ canvas { width: 100% !important; }
           <div class="ql-label">Ajouter</div>
           <div class="ql-badge orange" id="ql-repas-badge" style="display:none"></div>
         </button>
-
+        <button class="ql-btn" onclick="openModal('sommeil')" style="--ql-color:var(--accent4)">
+          <div class="ql-icon">😴</div>
+          <div>Sommeil</div>
+          <div class="ql-label">Saisir</div>
+          <div class="ql-badge" id="ql-sleep-badge" style="display:none;background:rgba(167,139,250,.15);color:var(--accent4)"></div>
+        </button>
       </div>
 
       <!-- HIDDEN: chips/dur containers used by JS (also built in modal) -->
@@ -705,31 +905,15 @@ canvas { width: 100% !important; }
         </div>
       </div>
 
-      <!-- BILAN COMPLET (optionnel) -->
+      <!-- NOTE DU JOUR -->
       <details style="margin-bottom:.9rem">
         <summary style="cursor:pointer;font-size:.82rem;color:var(--muted);padding:.5rem 0;list-style:none;display:flex;align-items:center;gap:.4rem">
-          <span>＋</span> Ajouter note / sommeil / bilan complet
+          <span>＋</span> Ajouter une note
         </summary>
         <div class="card" style="margin-top:.6rem">
-          <div class="form-row">
-            <div class="field">
-              <label>😴 Sommeil (h)</label>
-              <input type="number" id="inp-sleep" step="0.5" min="0" max="14" placeholder="7.5">
-            </div>
-            <div class="field">
-              <label>Qualité sommeil</label>
-              <div class="sleep-stars" id="sleep-stars" style="margin-top:.4rem">
-                <span class="sstar" onclick="setSleep(1)">😩</span>
-                <span class="sstar" onclick="setSleep(2)">😐</span>
-                <span class="sstar" onclick="setSleep(3)">🙂</span>
-                <span class="sstar" onclick="setSleep(4)">😊</span>
-                <span class="sstar" onclick="setSleep(5)">🌟</span>
-              </div>
-            </div>
-            <div class="field field-full">
-              <label>Note / ressenti</label>
-              <textarea id="inp-note" placeholder="Comment tu te sens aujourd'hui…"></textarea>
-            </div>
+          <div class="field" style="margin-bottom:.7rem">
+            <label>Note / ressenti</label>
+            <textarea id="inp-note" placeholder="Comment tu te sens aujourd'hui…"></textarea>
           </div>
           <button class="btn btn-secondary" style="font-size:.85rem" onclick="saveSleepNote()">Sauvegarder</button>
         </div>
@@ -939,6 +1123,17 @@ canvas { width: 100% !important; }
       <button class="btn btn-danger btn-sm" style="margin-top:.7rem" onclick="clearApiKey()">Effacer la clé</button>
     </div>
 
+    <!-- LOGOUT -->
+    <div class="card" style="margin-bottom:.9rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:.9rem;font-weight:600" id="settings-user-name">Mon compte</div>
+          <div style="font-size:.75rem;color:var(--muted)" id="settings-user-email"></div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="logout()">Déconnexion</button>
+      </div>
+    </div>
+
     <!-- EXPORT -->
     <div class="card">
       <div style="font-size:.9rem;font-weight:600;margin-bottom:.3rem">💾 Données</div>
@@ -1113,6 +1308,32 @@ canvas { width: 100% !important; }
 
 
 
+  <!-- SOMMEIL MODAL -->
+  <div id="modal-sommeil" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-sommeil')">
+    <div class="mini-modal">
+      <div class="mini-modal-handle"></div>
+      <div class="mini-modal-title">😴 Saisir le sommeil</div>
+      <div class="mini-form-row" style="margin-bottom:.8rem">
+        <div class="field" style="flex:1">
+          <label>Durée (heures)</label>
+          <input type="number" id="modal-sleep-h" step="0.5" min="0" max="14" placeholder="7.5" style="font-size:1.1rem">
+        </div>
+        <div class="field" style="flex:1">
+          <label>Qualité</label>
+          <div class="sleep-stars" id="sleep-stars" style="margin-top:.6rem">
+            <span class="sstar" onclick="setSleep(1)">😩</span>
+            <span class="sstar" onclick="setSleep(2)">😐</span>
+            <span class="sstar" onclick="setSleep(3)">🙂</span>
+            <span class="sstar" onclick="setSleep(4)">😊</span>
+            <span class="sstar" onclick="setSleep(5)">🌟</span>
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem" id="modal-sleep-q-label">Qualité ?</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveSommeil()">✓ Enregistrer</button>
+    </div>
+  </div>
+
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -1196,9 +1417,8 @@ let S = {
 };
 
 function persist() {
+  // Keep localStorage as fallback for water (not in DB)
   try {
-    localStorage.setItem('pdc_daily',      JSON.stringify(S.daily));
-    localStorage.setItem('pdc_weekly',     JSON.stringify(S.weekly));
     localStorage.setItem('pdc_water_cl',   S.waterCl);
     localStorage.setItem('pdc_water_date', S.waterDate);
   } catch(e) {}
@@ -1229,13 +1449,13 @@ function goTab(tab) {
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];
   ['inp-date','inp-w-date-quick','inp-w-date','modal-weight-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
-  document.getElementById('home-date').textContent =
-    new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
   buildChips();
   buildMeals();
   initWater();
   updateApiStatus();
-  renderAll();
+  // Hide app until authenticated
+  document.querySelector('.app-shell').style.display = 'none';
+  initAuth();
 });
 
 // ══════════════════════════════════════════════════════
@@ -1357,6 +1577,28 @@ function setSleep(n) {
   const inp = document.getElementById('inp-sleep');
   if (inp) inp.dataset.quality = n;
   document.querySelectorAll('.sstar').forEach((s,i) => s.classList.toggle('on', i<n));
+  const lbl = document.getElementById('modal-sleep-q-label');
+  const labels = ['','Mauvais 😩','Moyen 😐','Correct 🙂','Bon 😊','Excellent 🌟'];
+  if (lbl) {
+    lbl.textContent = n > 0 ? labels[n] : 'Qualite ?';
+    lbl.style.color = n>=4?'var(--success)':n>=3?'var(--accent)':n>0?'var(--danger)':'var(--muted)';
+  }
+}
+
+function saveSommeil() {
+  const h = parseFloat(document.getElementById('modal-sleep-h')?.value)||null;
+  if (!h) { toast('Saisis la durée'); return; }
+  const today = todayStr();
+  const e = getTodayEntry();
+  e.sleep  = h;
+  e.sleepQ = S.sleepRating||null;
+  upsert(S.daily, e, 'daily'); persist(); renderAll();
+  closeModal('modal-sommeil');
+  const b = document.getElementById('ql-sleep-badge');
+  if (b) { b.textContent = h+'h'; b.style.display='block'; }
+  document.getElementById('modal-sleep-h').value = '';
+  setSleep(0);
+  toast('✓ Sommeil ' + h + 'h enregistré !');
 }
 
 
@@ -1409,6 +1651,11 @@ function openModal(type) {
 
   if (type === 'poids') {
     // poids modal removed
+  }
+  if (type === 'sommeil') {
+    const el = document.getElementById('modal-sleep-h');
+    if (el) el.value = '';
+    setSleep(0);
   }
 }
 
@@ -1496,7 +1743,7 @@ function saveSeance() {
   if(e.free_duration) t+=Math.round(8*e.free_duration);
   e.target = t;
 
-  upsert(S.daily, e); persist(); renderAll();
+  upsert(S.daily, e, 'daily'); persist(); renderAll();
   closeModal('modal-sport');
 
   // Reset modal
@@ -1519,7 +1766,7 @@ function addMealEntry(kcal, name, type) {
   e.cal = (e.cal||0) + kcal;
   if (!e.meals) e.meals = [];
   e.meals.push({ name, kcal, type: type||'', time: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) });
-  upsert(S.daily, e); persist(); renderAll();
+  upsert(S.daily, e, 'daily'); persist(); renderAll();
   const b = document.getElementById('ql-repas-badge');
   if(b) { b.textContent=(S.daily.find(x=>x.date===today)?.cal||0)+' kcal'; b.style.display='block'; }
   const totEl = document.getElementById('modal-cal-total');
@@ -1550,7 +1797,7 @@ function saveSleepNote() {
   if (sleep)  e.sleep  = sleep;
   if (sleepQ) e.sleepQ = sleepQ;
   if (note)   e.note   = e.note ? e.note + ' · ' + note : note;
-  upsert(S.daily, e); persist(); renderAll();
+  upsert(S.daily, e, 'daily'); persist(); renderAll();
   toast('✓ Sauvegardé !');
 }
 
@@ -1848,7 +2095,7 @@ function saveAsFavorite() {
   const type = document.getElementById('modal-repas-type')?.value;
   if (!kcal || !name) { toast('Remplis les calories et le nom'); return; }
   const fav = { id: Date.now(), name, kcal, type: type||'' };
-  S_FAVS.push(fav); saveFavs();
+  S_FAVS.push(fav); saveFavs(); syncFav(fav, 'add');
   toast(`⭐ "${name}" ajouté aux favoris`);
 }
 
@@ -1884,7 +2131,7 @@ function addFavToLog(id) {
 }
 
 function deleteFav(id) {
-  S_FAVS = S_FAVS.filter(f => f.id!==id); saveFavs(); renderFavsList();
+  const fav = S_FAVS.find(f=>f.id===id); S_FAVS = S_FAVS.filter(f => f.id!==id); saveFavs(); if(fav) syncFav(fav,'delete'); renderFavsList();
   toast('Favori supprimé');
 }
 
@@ -1910,7 +2157,14 @@ function renderWater() {
 // ══════════════════════════════════════════════════════
 // ENTRIES
 // ══════════════════════════════════════════════════════
-function upsert(arr, e) { const i=arr.findIndex(x=>x.date===e.date); if(i>=0) arr[i]=e; else arr.push(e); arr.sort((a,b)=>a.date.localeCompare(b.date)); }
+function upsert(arr, e, type) {
+  const i=arr.findIndex(x=>x.date===e.date);
+  if(i>=0) arr[i]=e; else arr.push(e);
+  arr.sort((a,b)=>a.date.localeCompare(b.date));
+  // Sync to Supabase
+  if (type==='daily')  syncDaily(e);
+  if (type==='weekly') syncWeekly(e);
+}
 
 function addDailyEntry() {
   const dateEl = document.getElementById('inp-date');
@@ -1930,7 +2184,7 @@ function addDailyEntry() {
   e.free_activity = document.getElementById('inp-free-act')?.value.trim()||null;
   e.free_duration = parseInt(document.getElementById('inp-free-dur')?.value)||null;
 
-  upsert(S.daily, e); persist(); renderAll();
+  upsert(S.daily, e, 'daily'); persist(); renderAll();
   ['inp-date','inp-weight','inp-cal','inp-sleep','inp-note','inp-free-act','inp-free-dur'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   Object.keys(ACTS).forEach(id=>{const el=document.getElementById(`chk-${id}`);if(el)el.checked=false;});
   setSleep(0); updateCalTarget();
@@ -1955,6 +2209,7 @@ function deleteEntry(type, date) {
   if (type==='daily')  S.daily  = S.daily.filter(e=>e.date!==date);
   if (type==='weekly') S.weekly = S.weekly.filter(e=>e.date!==date);
   persist(); renderAll();
+  deleteEntryRemote(type, date);
 }
 
 function addMealToLog(kcal, name) {
@@ -2314,6 +2569,307 @@ function toast(msg) {
   clearTimeout(toastT);
   toastT=setTimeout(()=>el.classList.remove('show'),2400);
 }
+// ══════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════════════════
+const SUPA_URL  = 'https://xthokevewbfmqxfshb.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0aG9rZXZld2JmbXF4ZnNoYiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQyODE0MTM5LCJleHAiOjIwNTgzOTAxMzl9.Tl3KFdFqYuFRgcgXFBBOoEPJCVJh9JWz9EpEQf-R2YY';
+const supa      = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser    = null;
+let currentProfile = null;
+let authMode       = 'login';
+
+// ── AUTH INIT ──────────────────────────────────────────
+async function initAuth() {
+  const { data: { session } } = await supa.auth.getSession();
+  if (session?.user) {
+    await onUserLoggedIn(session.user);
+  } else {
+    showAuthScreen();
+  }
+
+  supa.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      await onUserLoggedIn(session.user);
+    } else if (event === 'SIGNED_OUT') {
+      showAuthScreen();
+    }
+  });
+}
+
+async function onUserLoggedIn(user) {
+  currentUser = user;
+  const { data: profile } = await supa.from('profiles').select('*').eq('id', user.id).single();
+  if (!profile || !profile.start_weight) {
+    showOnboarding(user);
+  } else {
+    currentProfile = profile;
+    applyProfile(profile);
+    hideAuthScreens();
+    await loadUserData();
+    renderAll();
+  }
+}
+
+function applyProfile(p) {
+  CFG.startWeight = p.start_weight  || 110;
+  CFG.goalWeight  = p.goal_weight   || 95;
+  CFG.goalKg      = p.goal_kg       || 15;
+  CFG.startWaist  = p.start_waist   || 105;
+  CFG.startChest  = p.start_chest   || 110;
+  CFG.calBase     = p.cal_base      || 2200;
+  CFG.startDate   = p.start_date    || new Date().toISOString().split('T')[0];
+  // Update home greeting
+  const homeDate = document.getElementById('home-date');
+  if (homeDate) homeDate.textContent = `Bonjour ${p.name || ''} 👋`;
+}
+
+function showAuthScreen() {
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('onboarding-screen').style.display = 'none';
+  document.querySelector('.app-shell').style.display = 'none';
+}
+
+function hideAuthScreens() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('onboarding-screen').style.display = 'none';
+  document.querySelector('.app-shell').style.display = 'flex';
+}
+
+function showOnboarding(user) {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('onboarding-screen').style.display = 'block';
+  document.querySelector('.app-shell').style.display = 'none';
+  // Pre-fill name from Google
+  const name = user.user_metadata?.full_name?.split(' ')[0] || '';
+  const obName = document.getElementById('ob-name');
+  if (obName && name) obName.value = name;
+}
+
+// ── AUTH METHODS ───────────────────────────────────────
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', i===(mode==='login'?0:1)));
+  const nameField = document.getElementById('auth-name-field');
+  const btn       = document.getElementById('auth-submit-btn');
+  if (nameField) nameField.style.display = mode === 'signup' ? 'block' : 'none';
+  if (btn) btn.textContent = mode === 'login' ? 'Se connecter' : "S'inscrire";
+}
+
+async function loginWithGoogle() {
+  showAuthLoading(true);
+  const { error } = await supa.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) showAuthError(error.message);
+  showAuthLoading(false);
+}
+
+async function submitAuth() {
+  const email    = document.getElementById('auth-email')?.value.trim();
+  const password = document.getElementById('auth-password')?.value;
+  if (!email || !password) { showAuthError('Email et mot de passe requis'); return; }
+  showAuthLoading(true);
+  hideAuthError();
+
+  let error;
+  if (authMode === 'login') {
+    const res = await supa.auth.signInWithPassword({ email, password });
+    error = res.error;
+  } else {
+    const name = document.getElementById('auth-name')?.value.trim();
+    const res  = await supa.auth.signUp({ email, password, options: { data: { full_name: name } } });
+    error = res.error;
+    if (!error) {
+      showAuthError('Vérifie ton email pour confirmer ton compte !');
+      showAuthLoading(false);
+      return;
+    }
+  }
+  if (error) showAuthError(error.message);
+  showAuthLoading(false);
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+function hideAuthError() {
+  const el = document.getElementById('auth-error');
+  if (el) el.style.display = 'none';
+}
+function showAuthLoading(show) {
+  const el = document.getElementById('auth-loading');
+  const btn = document.getElementById('auth-submit-btn');
+  if (el)  el.style.display  = show ? 'flex' : 'none';
+  if (btn) btn.style.display = show ? 'none' : 'block';
+}
+
+// ── ONBOARDING ─────────────────────────────────────────
+let obData = {};
+
+function obNext(step) {
+  if (step === 1) {
+    const name   = document.getElementById('ob-name')?.value.trim();
+    const weight = parseFloat(document.getElementById('ob-weight')?.value);
+    const goal   = parseFloat(document.getElementById('ob-goal')?.value);
+    const waist  = parseFloat(document.getElementById('ob-waist')?.value)||null;
+    const chest  = parseFloat(document.getElementById('ob-chest')?.value)||null;
+    if (!name || isNaN(weight) || isNaN(goal)) { toast('Remplis tous les champs obligatoires'); return; }
+    obData = { name, start_weight: weight, goal_weight: goal, goal_kg: weight - goal, start_waist: waist, start_chest: chest };
+    document.getElementById('ob-step1').classList.remove('active');
+    document.getElementById('ob-step2').classList.add('active');
+    document.getElementById('op2').classList.add('done');
+  }
+  if (step === 2) {
+    document.getElementById('ob-step2').classList.remove('active');
+    document.getElementById('ob-step3').classList.add('active');
+    document.getElementById('op3').classList.add('done');
+  }
+}
+
+function calcObCal() {
+  const weight = obData.start_weight || 110;
+  const age    = parseInt(document.getElementById('ob-age')?.value) || 30;
+  const height = parseInt(document.getElementById('ob-height')?.value) || 175;
+  const activ  = parseFloat(document.getElementById('ob-activity')?.value) || 1.4;
+  // Mifflin-St Jeor (male)
+  const mb     = 10 * weight + 6.25 * height - 5 * age + 5;
+  const tdee   = Math.round(mb * activ);
+  const deficit= 700;
+  const target = tdee - deficit;
+  obData.cal_base = target;
+  const resEl = document.getElementById('ob-cal-result');
+  const valEl = document.getElementById('ob-cal-value');
+  const detEl = document.getElementById('ob-cal-detail');
+  if (resEl) resEl.style.display = 'block';
+  if (valEl) valEl.textContent = target.toLocaleString('fr-FR');
+  if (detEl) detEl.textContent = `kcal/j · TDEE ${tdee} kcal · déficit ${deficit} kcal`;
+}
+
+async function obFinish() {
+  if (!currentUser) return;
+  const today    = new Date().toISOString().split('T')[0];
+  const protocol = document.getElementById('ob-protocol')?.value;
+  const goalType = document.getElementById('ob-goal-type')?.value;
+  const profile  = {
+    id:           currentUser.id,
+    name:         obData.name,
+    start_weight: obData.start_weight,
+    goal_weight:  obData.goal_weight,
+    goal_kg:      obData.goal_kg,
+    start_waist:  obData.start_waist,
+    start_chest:  obData.start_chest,
+    cal_base:     obData.cal_base || 2200,
+    hydra_goal:   250,
+    start_date:   today,
+    protocol,
+    goal_type:    goalType,
+  };
+  const { error } = await supa.from('profiles').upsert(profile);
+  if (error) { toast('Erreur: ' + error.message); return; }
+  currentProfile = profile;
+  applyProfile(profile);
+  hideAuthScreens();
+  await loadUserData();
+  renderAll();
+  toast('Bienvenue ' + obData.name + ' ! Ton parcours commence maintenant 🚀');
+}
+
+// ── DATA SYNC ──────────────────────────────────────────
+async function loadUserData() {
+  if (!currentUser) return;
+  const uid = currentUser.id;
+
+  const [dailyRes, weeklyRes, favsRes] = await Promise.all([
+    supa.from('daily_entries').select('*').eq('user_id', uid).order('date'),
+    supa.from('weekly_entries').select('*').eq('user_id', uid).order('date'),
+    supa.from('favorites').select('*').eq('user_id', uid).order('created_at'),
+  ]);
+
+  if (dailyRes.data)  S.daily  = dailyRes.data.map(dbToDaily);
+  if (weeklyRes.data) S.weekly = weeklyRes.data.map(dbToWeekly);
+  if (favsRes.data)   S_FAVS   = favsRes.data.map(dbToFav);
+}
+
+function dbToDaily(r) {
+  return {
+    date: r.date, weight: r.weight, cal: r.cal,
+    sleep: r.sleep, sleepQ: r.sleep_q, note: r.note, target: r.target,
+    course: r.course, kb: r.kb, futsal: r.futsal,
+    corde: r.corde, corde_dur: r.corde_dur,
+    velo: r.velo, velo_dur: r.velo_dur,
+    natation: r.natation, natation_dur: r.natation_dur,
+    hiit: r.hiit, hiit_dur: r.hiit_dur,
+    marche: r.marche, marche_dur: r.marche_dur,
+    free_activity: r.free_activity, free_duration: r.free_duration,
+  };
+}
+
+function dbToWeekly(r) {
+  return { date: r.date, weight: r.weight, waist: r.waist, chest: r.chest, note: r.note };
+}
+
+function dbToFav(r) {
+  return { id: r.id, name: r.name, kcal: r.kcal, type: r.type };
+}
+
+async function syncDaily(entry) {
+  if (!currentUser) { persist(); return; }
+  const uid = currentUser.id;
+  const row = {
+    user_id: uid, date: entry.date,
+    weight: entry.weight||null, cal: entry.cal||null,
+    sleep: entry.sleep||null, sleep_q: entry.sleepQ||null,
+    note: entry.note||null, target: entry.target||null,
+    course: !!entry.course, kb: !!entry.kb, futsal: !!entry.futsal,
+    corde: !!entry.corde, corde_dur: entry.corde_dur||null,
+    velo: !!entry.velo, velo_dur: entry.velo_dur||null,
+    natation: !!entry.natation, natation_dur: entry.natation_dur||null,
+    hiit: !!entry.hiit, hiit_dur: entry.hiit_dur||null,
+    marche: !!entry.marche, marche_dur: entry.marche_dur||null,
+    free_activity: entry.free_activity||null, free_duration: entry.free_duration||null,
+  };
+  await supa.from('daily_entries').upsert(row, { onConflict: 'user_id,date' });
+}
+
+async function syncWeekly(entry) {
+  if (!currentUser) { persist(); return; }
+  await supa.from('weekly_entries').upsert({
+    user_id: currentUser.id, date: entry.date,
+    weight: entry.weight||null, waist: entry.waist||null,
+    chest: entry.chest||null, note: entry.note||null,
+  }, { onConflict: 'user_id,date' });
+}
+
+async function syncFav(fav, action) {
+  if (!currentUser) return;
+  if (action === 'add') {
+    const { data } = await supa.from('favorites').insert({
+      user_id: currentUser.id, name: fav.name, kcal: fav.kcal, type: fav.type||''
+    }).select().single();
+    if (data) fav.id = data.id;
+  } else if (action === 'delete') {
+    await supa.from('favorites').delete().eq('id', fav.id).eq('user_id', currentUser.id);
+  }
+}
+
+async function deleteEntryRemote(type, date) {
+  if (!currentUser) return;
+  const table = type === 'daily' ? 'daily_entries' : 'weekly_entries';
+  await supa.from(table).delete().eq('user_id', currentUser.id).eq('date', date);
+}
+
+// Logout
+async function logout() {
+  await supa.auth.signOut();
+  currentUser = null; currentProfile = null;
+  S.daily = []; S.weekly = []; S_FAVS = [];
+  showAuthScreen();
+}
+
 </script>
 </body>
 </html>
