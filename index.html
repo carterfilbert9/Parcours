@@ -2736,8 +2736,10 @@ function obNext(step) {
     const goal   = parseFloat(document.getElementById('ob-goal')?.value);
     const waist  = parseFloat(document.getElementById('ob-waist')?.value)||null;
     const chest  = parseFloat(document.getElementById('ob-chest')?.value)||null;
-    if (!name || isNaN(weight) || isNaN(goal)) { toast('Remplis tous les champs obligatoires'); return; }
-    obData = { name, start_weight: weight, goal_weight: goal, goal_kg: weight - goal, start_waist: waist, start_chest: chest };
+    if (!name) { toast('Entre ton prénom pour continuer'); return; }
+    if (isNaN(weight)) { toast('Entre ton poids actuel'); return; }
+    if (isNaN(goal))   { toast('Entre ton objectif de poids'); return; }
+    obData = { name, start_weight: weight, goal_weight: goal, goal_kg: Math.abs(weight - goal), start_waist: waist||null, start_chest: chest||null };
     document.getElementById('ob-step1').classList.remove('active');
     document.getElementById('ob-step2').classList.add('active');
     document.getElementById('op2').classList.add('done');
@@ -2769,32 +2771,55 @@ function calcObCal() {
 }
 
 async function obFinish() {
-  if (!currentUser) return;
+  // Show loading state
+  const btn = document.querySelector('#ob-step3 .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Chargement...'; }
+
+  if (!currentUser) {
+    toast('Erreur : utilisateur non connecté');
+    if (btn) { btn.disabled = false; btn.textContent = 'Commencer mon parcours 🚀'; }
+    return;
+  }
+
+  // obData may be empty if user skipped steps — use defaults
   const today    = new Date().toISOString().split('T')[0];
-  const protocol = document.getElementById('ob-protocol')?.value;
-  const goalType = document.getElementById('ob-goal-type')?.value;
-  const profile  = {
+  const protocol = document.getElementById('ob-protocol')?.value || 'standard';
+  const goalType = document.getElementById('ob-goal-type')?.value || 'loss';
+
+  const profile = {
     id:           currentUser.id,
-    name:         obData.name,
-    start_weight: obData.start_weight,
-    goal_weight:  obData.goal_weight,
-    goal_kg:      obData.goal_kg,
-    start_waist:  obData.start_waist,
-    start_chest:  obData.start_chest,
-    cal_base:     obData.cal_base || 2200,
+    name:         obData.name         || currentUser.user_metadata?.full_name?.split(' ')[0] || 'Utilisateur',
+    start_weight: obData.start_weight || 80,
+    goal_weight:  obData.goal_weight  || 70,
+    goal_kg:      obData.goal_kg      || 10,
+    start_waist:  obData.start_waist  || null,
+    start_chest:  obData.start_chest  || null,
+    cal_base:     obData.cal_base     || 2000,
     hydra_goal:   250,
     start_date:   today,
-    protocol,
+    protocol:     protocol,
     goal_type:    goalType,
   };
-  const { error } = await supa.from('profiles').upsert(profile);
-  if (error) { toast('Erreur: ' + error.message); return; }
-  currentProfile = profile;
-  applyProfile(profile);
-  hideAuthScreens();
-  await loadUserData();
-  renderAll();
-  toast('Bienvenue ' + obData.name + ' ! Ton parcours commence maintenant 🚀');
+
+  try {
+    const { data, error } = await supa.from('profiles').upsert(profile).select().single();
+    if (error) {
+      console.error('Profile upsert error:', error);
+      toast('Erreur Supabase: ' + error.message);
+      if (btn) { btn.disabled = false; btn.textContent = 'Commencer mon parcours 🚀'; }
+      return;
+    }
+    currentProfile = data || profile;
+    applyProfile(currentProfile);
+    hideAuthScreens();
+    await loadUserData();
+    renderAll();
+    toast('Bienvenue ' + profile.name + ' ! 🚀');
+  } catch(e) {
+    console.error('obFinish error:', e);
+    toast('Erreur inattendue: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Commencer mon parcours 🚀'; }
+  }
 }
 
 // ── DATA SYNC ──────────────────────────────────────────
