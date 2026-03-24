@@ -367,6 +367,91 @@ canvas { width: 100% !important; }
 .op-dot.done { background: var(--accent); }
 .user-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--card2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1rem; }
 
+
+/* ── FAB BUTTON ─────────────────────────────────────── */
+.fab {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--accent); border: none;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: -8px; flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(232,201,122,0.4);
+  transition: transform .2s, box-shadow .2s;
+  cursor: pointer; position: relative; z-index: 2;
+}
+.fab:active { transform: scale(.93); }
+.fab-icon { font-size: 1.6rem; line-height: 1; transition: transform .3s; }
+.fab.open .fab-icon { transform: rotate(45deg); }
+
+/* ── ACTION MENU ─────────────────────────────────────── */
+.action-menu-backdrop {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: none; flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: calc(var(--nav-h) + var(--safe-b) + 1rem);
+  animation: fadeIn .2s ease;
+}
+.action-menu-backdrop.open { display: flex; }
+.action-menu {
+  padding: 0 1rem;
+  max-width: 430px;
+  width: 100%;
+  margin: 0 auto;
+  animation: slideUp .25s cubic-bezier(.4,0,.2,1);
+}
+.action-title {
+  font-size: .72rem; text-transform: uppercase;
+  letter-spacing: .1em; color: rgba(255,255,255,0.4);
+  margin-bottom: .7rem; padding-left: .2rem;
+}
+.action-row-wide {
+  display: grid; grid-template-columns: 1fr;
+  gap: .6rem; margin-bottom: .6rem;
+}
+.action-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .6rem;
+}
+.action-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.1rem 1rem;
+  display: flex; flex-direction: column;
+  align-items: flex-start; gap: .4rem;
+  cursor: pointer; transition: background .15s;
+  text-align: left;
+}
+.action-btn:hover { background: var(--card2); }
+.action-btn-wide {
+  flex-direction: row; align-items: center;
+  padding: .9rem 1.2rem; gap: .8rem;
+}
+.action-btn-icon {
+  font-size: 1.5rem; line-height: 1;
+}
+.action-btn-wide .action-btn-icon { font-size: 1.3rem; }
+.action-btn-label { font-size: .95rem; font-weight: 600; color: var(--text); }
+.action-btn-sub { font-size: .75rem; color: var(--muted); }
+
+/* ── USER AVATAR BUTTON ─────────────────────────────── */
+.user-avatar-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--card2); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: .85rem; font-weight: 700;
+  color: var(--accent); transition: border-color .2s; flex-shrink: 0;
+}
+.user-avatar-btn:hover { border-color: var(--accent); }
+
+/* ── HOME HEADER UPDATE ──────────────────────────────── */
+.home-greeting { line-height: 1.1; }
+.home-greeting-name { font-family: var(--font-t); font-size: 1.8rem; color: var(--text); }
+.home-greeting-week { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+.home-greeting-week span { color: var(--accent); font-weight: 600; }
+
 /* ── QUICK LOG ──────────────────────────────────────── */
 .quick-log {
   display: grid;
@@ -705,15 +790,14 @@ canvas { width: 100% !important; }
   <!-- ══ PAGE: ACCUEIL ══════════════════════════════════ -->
   <div class="page active page-enter" id="page-home">
     <div class="page-header">
-      <div>
-        <div class="page-title">Bonjour 👋</div>
-        <div class="page-subtitle" id="home-date"></div>
+      <div class="home-greeting">
+        <div class="home-greeting-name" id="home-greeting-name">Bonjour 👋</div>
+        <div class="home-greeting-week" id="home-date"></div>
+        <div class="home-greeting-week">Semaine <span id="home-week">1</span>/13 · <span id="home-week-dates" style="color:var(--muted)"></span></div>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:.7rem;color:var(--muted)">Semaine</div>
-        <div style="font-family:var(--font-t);font-size:1.4rem;color:var(--success)" id="home-week">1</div>
-        <div style="font-size:.65rem;color:var(--muted)">/ 13</div>
-      </div>
+      <button class="user-avatar-btn" id="user-avatar-btn" onclick="goTab('settings')" title="Paramètres">
+        <span id="user-avatar-initials">?</span>
+      </button>
     </div>
 
     <!-- Poids progress -->
@@ -1192,20 +1276,52 @@ canvas { width: 100% !important; }
     <button class="nav-item" id="nav-journal" onclick="goTab('journal')">
       <span class="nav-icon">📆</span><span>Journal</span>
     </button>
+    <button class="fab" id="fab-btn" onclick="toggleActionMenu()">
+      <span class="fab-icon" id="fab-icon">＋</span>
+    </button>
     <button class="nav-item" id="nav-stats" onclick="goTab('stats')">
       <span class="nav-icon">📊</span><span>Stats</span>
     </button>
     <button class="nav-item" id="nav-repas" onclick="goTab('repas')">
       <span class="nav-icon">🍽️</span><span>Repas</span>
     </button>
-    <button class="nav-item" id="nav-settings" onclick="goTab('settings')">
-      <span class="nav-icon">⚙️</span><span>Paramètres</span>
-    </button>
   </nav>
 
 </div>
 
-  <!-- ══ MODALS ══════════════════════════════════════════ -->
+  
+<!-- ══ ACTION MENU ════════════════════════════════════ -->
+<div class="action-menu-backdrop" id="action-menu-backdrop" onclick="closeActionMenu()">
+  <div class="action-menu" onclick="event.stopPropagation()">
+    <div class="action-title">Que veux-tu faire ?</div>
+
+    <!-- 2x2 grid -->
+    <div class="action-row">
+      <button class="action-btn" onclick="closeActionMenu();switchJournalTab('photo');goTab('journal')">
+        <div class="action-btn-icon">📷</div>
+        <div class="action-btn-label">Scanner un repas</div>
+        <div class="action-btn-sub">Analyse IA</div>
+      </button>
+      <button class="action-btn" onclick="closeActionMenu();openModal('sport')">
+        <div class="action-btn-icon">🏃</div>
+        <div class="action-btn-label">Ajouter une activité</div>
+        <div class="action-btn-sub">Course, KB, Futsal…</div>
+      </button>
+      <button class="action-btn" onclick="closeActionMenu();switchJournalTab('weekly');goTab('journal')">
+        <div class="action-btn-icon">📅</div>
+        <div class="action-btn-label">Bilan de la semaine</div>
+        <div class="action-btn-sub">Poids & mensurations</div>
+      </button>
+      <button class="action-btn" onclick="closeActionMenu();openModal('repas');switchRepasModalTab('search')">
+        <div class="action-btn-icon">🥗</div>
+        <div class="action-btn-label">Ajouter un ingrédient</div>
+        <div class="action-btn-sub">Base de 108 aliments</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══════════════════════════════════════════ -->
 
   <!-- SPORT MODAL -->
   <div id="modal-sport" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-sport')">
@@ -1437,7 +1553,8 @@ function goTab(tab) {
   page.classList.remove('page-enter');
   void page.offsetWidth;
   page.classList.add('page-enter');
-  document.getElementById(`nav-${tab}`).classList.add('active');
+  const navEl = document.getElementById(`nav-${tab}`);
+  if (navEl) navEl.classList.add('active');
   currentTab = tab;
   if (tab === 'stats') renderCharts();
   if (tab === 'repas') renderShop();
@@ -2135,6 +2252,40 @@ function deleteFav(id) {
   toast('Favori supprimé');
 }
 
+
+// ══════════════════════════════════════════════════════
+// ACTION MENU (FAB)
+// ══════════════════════════════════════════════════════
+function toggleActionMenu() {
+  const backdrop = document.getElementById('action-menu-backdrop');
+  const fab      = document.getElementById('fab-btn');
+  const isOpen   = backdrop.classList.contains('open');
+  if (isOpen) {
+    closeActionMenu();
+  } else {
+    backdrop.classList.add('open');
+    fab.classList.add('open');
+  }
+}
+
+function closeActionMenu() {
+  const backdrop = document.getElementById('action-menu-backdrop');
+  const fab      = document.getElementById('fab-btn');
+  backdrop.classList.remove('open');
+  fab.classList.remove('open');
+}
+
+function updateUserAvatar() {
+  const initials = document.getElementById('user-avatar-initials');
+  const greetEl  = document.getElementById('home-greeting-name');
+  if (!initials || !greetEl) return;
+  const name = currentProfile?.name || currentUser?.user_metadata?.full_name || '';
+  const first = name.split(' ')[0] || '';
+  const ini   = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+  initials.textContent = ini;
+  greetEl.textContent  = first ? `Bonjour ${first} 👋` : 'Bonjour 👋';
+}
+
 // ══════════════════════════════════════════════════════
 // WATER
 // ══════════════════════════════════════════════════════
@@ -2232,6 +2383,7 @@ function renderAll() {
   renderLogs();
   updateExportStatus();
   updateTodayRecap();
+  updateUserAvatar();
   renderMealRecap();
   const start = new Date(CFG.startDate+'T12:00:00');
   const diff  = Math.floor((Date.now()-start)/86400000);
@@ -2434,14 +2586,30 @@ let photoB64=null, photoMime=null, lastAnalysis=null;
 
 function handlePhoto(e) {
   const file=e.target.files[0]; if(!file)return;
-  photoMime=file.type||'image/jpeg';
+  photoMime='image/jpeg'; // Always convert to JPEG for compression
   const r=new FileReader();
   r.onload=ev=>{
-    photoB64=ev.target.result.split(',')[1];
-    document.getElementById('photo-img').src=ev.target.result;
-    document.getElementById('upload-zone').style.display='none';
-    document.getElementById('photo-preview').style.display='block';
-    document.getElementById('photo-result').style.display='none';
+    // Compress via canvas before sending
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=1200; // max dimension px
+      let w=img.width, h=img.height;
+      if(w>MAX||h>MAX){
+        if(w>h){ h=Math.round(h*MAX/w); w=MAX; }
+        else   { w=Math.round(w*MAX/h); h=MAX; }
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.75); // 75% quality
+      photoB64=compressed.split(',')[1];
+      document.getElementById('photo-img').src=compressed;
+      document.getElementById('upload-zone').style.display='none';
+      document.getElementById('photo-preview').style.display='block';
+      document.getElementById('photo-result').style.display='none';
+    };
+    img.src=ev.target.result;
   };
   r.readAsDataURL(file);
 }
