@@ -445,6 +445,29 @@ canvas { width: 100% !important; }
 }
 .tab-mini.active { background: var(--card2); color: var(--text); border-color: var(--accent2); }
 
+
+/* ── MEAL RECAP ─────────────────────────────────────── */
+.meal-recap-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .5rem 0; border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.meal-recap-item:last-child { border-bottom: none; }
+.meal-recap-name { font-size: .85rem; font-weight: 500; flex: 1; }
+.meal-recap-type { font-size: .7rem; color: var(--muted); margin-right: .5rem; }
+.meal-recap-time { font-size: .7rem; color: var(--muted); margin-right: .6rem; }
+.meal-recap-kcal { font-family: var(--font-t); font-size: 1rem; color: var(--accent); }
+.meal-recap-total {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .6rem 0 0; margin-top: .3rem;
+  border-top: 1px solid var(--border);
+}
+.meal-recap-del {
+  background: none; border: none; color: var(--muted);
+  font-size: .75rem; cursor: pointer; padding: .1rem .3rem;
+  border-radius: 4px; transition: color .15s;
+}
+.meal-recap-del:hover { color: var(--danger); }
+
 /* ── TOAST ──────────────────────────────────────────── */
 #toast {
   position: fixed; bottom: calc(var(--nav-h) + var(--safe-b) + .8rem);
@@ -562,6 +585,25 @@ canvas { width: 100% !important; }
       </div>
     </div>
 
+    <!-- Recap repas du jour -->
+    <div class="card" id="h-meal-recap-card" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+        <div class="card-label" style="margin:0">🍽️ Repas du jour</div>
+        <button onclick="openModal('repas')" style="background:none;border:none;color:var(--accent);font-size:.8rem;cursor:pointer;font-weight:600">+ Ajouter</button>
+      </div>
+      <div id="h-meal-list"></div>
+      <div class="meal-recap-total">
+        <span style="font-size:.8rem;font-weight:600">Total</span>
+        <div>
+          <span style="font-family:var(--font-t);font-size:1.4rem;color:var(--orange)" id="h-meal-total">0</span>
+          <span style="font-size:.75rem;color:var(--muted)"> / <span id="h-meal-target">—</span> kcal</span>
+        </div>
+      </div>
+      <div class="pbar-track pbar-h8" style="margin-top:.5rem">
+        <div class="pbar-fill" id="h-meal-bar" style="width:0%;background:var(--orange)"></div>
+      </div>
+    </div>
+
     <!-- Sommeil + cible calories du jour -->
     <div class="stat-row">
       <div class="card card-sm">
@@ -645,6 +687,22 @@ canvas { width: 100% !important; }
       <div class="card card-sm" id="today-recap" style="margin-bottom:.9rem;display:none">
         <div class="card-label" style="margin-bottom:.5rem">📋 Récap du jour</div>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:.85rem" id="today-recap-content"></div>
+      </div>
+
+      <!-- DETAIL REPAS DU JOUR -->
+      <div class="card" id="j-meal-recap-card" style="display:none;margin-bottom:.9rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
+          <div class="card-label" style="margin:0">🍽️ Repas du jour</div>
+          <span style="font-family:var(--font-t);font-size:1.1rem;color:var(--orange)" id="j-meal-total">0 kcal</span>
+        </div>
+        <div id="j-meal-list"></div>
+        <div class="pbar-track pbar-h8" style="margin-top:.6rem">
+          <div class="pbar-fill" id="j-meal-bar" style="width:0%;background:var(--orange)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:.3rem">
+          <span>0</span>
+          <span id="j-meal-target-label">cible — kcal</span>
+        </div>
       </div>
 
       <!-- BILAN COMPLET (optionnel) -->
@@ -1455,32 +1513,30 @@ function saveSeance() {
   toast('✓ Séance enregistrée !');
 }
 
-function saveRepas() {
+function addMealEntry(kcal, name, type) {
   const today = todayStr();
+  const e = getTodayEntry();
+  e.cal = (e.cal||0) + kcal;
+  if (!e.meals) e.meals = [];
+  e.meals.push({ name, kcal, type: type||'', time: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) });
+  upsert(S.daily, e); persist(); renderAll();
+  const b = document.getElementById('ql-repas-badge');
+  if(b) { b.textContent=(S.daily.find(x=>x.date===today)?.cal||0)+' kcal'; b.style.display='block'; }
+  const totEl = document.getElementById('modal-cal-total');
+  if(totEl) totEl.textContent = S.daily.find(x=>x.date===today)?.cal||0;
+}
+
+function saveRepas() {
   const kcal  = parseInt(document.getElementById('modal-cal').value)||0;
   const desc  = document.getElementById('modal-repas-desc').value.trim();
   const type  = document.getElementById('modal-repas-type').value;
   if (!kcal) { toast('Saisis les calories'); return; }
-
-  const e = getTodayEntry();
-  e.cal = (e.cal||0) + kcal;
-  if (desc || type) {
-    const label = [type, desc].filter(Boolean).join(' — ');
-    e.note = e.note ? e.note + ' · ' + label : label;
-  }
-
-  upsert(S.daily, e); persist(); renderAll();
+  addMealEntry(kcal, desc||type||'Repas', type);
   closeModal('modal-repas');
-
-  document.getElementById('modal-cal').value = '';
-  document.getElementById('modal-repas-desc').value = '';
-
-  // Update badge
-  const b = document.getElementById('ql-repas-badge');
-  const total = S.daily.find(x=>x.date===today)?.cal||0;
-  b.textContent = total + ' kcal';
-  b.style.display = 'block';
-
+  const calEl = document.getElementById('modal-cal');
+  if(calEl) calEl.value = '';
+  const descEl = document.getElementById('modal-repas-desc');
+  if(descEl) descEl.value = '';
   toast(`✓ +${kcal} kcal ajoutés !`);
 }
 
@@ -1524,6 +1580,89 @@ function updateTodayRecap() {
   }
 }
 
+
+
+// ══════════════════════════════════════════════════════
+// MEAL RECAP
+// ══════════════════════════════════════════════════════
+function deleteMealFromToday(idx) {
+  const today = todayStr();
+  const e = S.daily.find(x=>x.date===today);
+  if (!e || !e.meals) return;
+  const removed = e.meals.splice(idx, 1)[0];
+  e.cal = Math.max(0, (e.cal||0) - (removed?.kcal||0));
+  persist(); renderAll();
+  toast('Repas supprimé');
+}
+
+function renderMealRecap() {
+  const today = todayStr();
+  const e = S.daily.find(x=>x.date===today);
+  const meals = e?.meals || [];
+  const totalCal = e?.cal || 0;
+  const target = e?.target || CFG.calBase;
+  const pct = Math.min(100, (totalCal/target)*100);
+
+  // HOME card
+  const hCard = document.getElementById('h-meal-recap-card');
+  const hList = document.getElementById('h-meal-list');
+  const hTotal = document.getElementById('h-meal-total');
+  const hTarget = document.getElementById('h-meal-target');
+  const hBar = document.getElementById('h-meal-bar');
+
+  if (hCard) {
+    hCard.style.display = meals.length ? 'block' : 'none';
+    if (hTotal) hTotal.textContent = totalCal;
+    if (hTarget) hTarget.textContent = target;
+    if (hBar) {
+      hBar.style.width = pct + '%';
+      hBar.style.background = pct > 100 ? 'var(--danger)' : pct > 80 ? 'var(--accent)' : 'var(--orange)';
+    }
+    if (hList) {
+      hList.innerHTML = meals.map((m,i) => `
+        <div class="meal-recap-item">
+          <div>
+            <div class="meal-recap-name">${m.name}</div>
+            <div class="meal-recap-type">${m.type||''} ${m.time ? '· '+m.time : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.4rem">
+            <div class="meal-recap-kcal">${m.kcal}</div>
+            <span style="font-size:.7rem;color:var(--muted)">kcal</span>
+            <button class="meal-recap-del" onclick="deleteMealFromToday(${i})">✕</button>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // JOURNAL card
+  const jCard = document.getElementById('j-meal-recap-card');
+  const jList = document.getElementById('j-meal-list');
+  const jTotal = document.getElementById('j-meal-total');
+  const jBar = document.getElementById('j-meal-bar');
+  const jTargetLbl = document.getElementById('j-meal-target-label');
+
+  if (jCard) {
+    jCard.style.display = meals.length ? 'block' : 'none';
+    if (jTotal) jTotal.textContent = totalCal + ' kcal';
+    if (jBar) {
+      jBar.style.width = pct + '%';
+      jBar.style.background = pct > 100 ? 'var(--danger)' : pct > 80 ? 'var(--accent)' : 'var(--orange)';
+    }
+    if (jTargetLbl) jTargetLbl.textContent = `cible ${target} kcal`;
+    if (jList) {
+      jList.innerHTML = meals.map((m,i) => `
+        <div class="meal-recap-item">
+          <div style="flex:1">
+            <div class="meal-recap-name">${m.name}</div>
+            <div class="meal-recap-type">${[m.type, m.time].filter(Boolean).join(' · ')}</div>
+          </div>
+          <div class="meal-recap-kcal">${m.kcal}</div>
+          <span style="font-size:.7rem;color:var(--muted);margin:0 .4rem">kcal</span>
+          <button class="meal-recap-del" onclick="deleteMealFromToday(${i})">✕</button>
+        </div>`).join('');
+    }
+  }
+}
 
 // ══════════════════════════════════════════════════════
 // FOOD DATABASE & FAVORITES
@@ -1573,6 +1712,7 @@ const FOOD_DB = [
   {n:'Riz complet cuit',         k:112, u:'g'},
   {n:'Riz basmati cuit',         k:121, u:'g'},
   {n:'Nouilles soba cuites',     k:99,  u:'g'},
+  {n:'Nouilles konjac',           k:10,  u:'g'},
   // Autres féculents
   {n:'Patate douce cuite',       k:86,  u:'g'},
   {n:'Pomme de terre cuite',     k:87,  u:'g'},
@@ -1694,25 +1834,8 @@ function searchFood(query) {
 }
 
 function selectFood(name, kcal, qty, unit) {
-  // Add directly to today's log
-  const today = todayStr();
-  const e = getTodayEntry();
-  e.cal = (e.cal||0) + kcal;
-  const label = `${name} (${qty}${unit})`;
-  e.note = e.note ? e.note + ' · ' + label : label;
-  upsert(S.daily, e); persist(); renderAll();
-
-  // Update modal total
-  const totEl = document.getElementById('modal-cal-total');
-  if (totEl) totEl.textContent = S.daily.find(x=>x.date===today)?.cal||0;
-
-  // Update badge
-  const b = document.getElementById('ql-repas-badge');
-  if (b) { b.textContent = (S.daily.find(x=>x.date===today)?.cal||0)+' kcal'; b.style.display='block'; }
-
+  addMealEntry(kcal, `${name} (${qty}${unit})`, '');
   toast(`✓ ${name} +${kcal} kcal`);
-
-  // Clear search
   const inp = document.getElementById('food-search-input');
   if (inp) inp.value = '';
   const res = document.getElementById('search-results');
@@ -1754,19 +1877,9 @@ function renderFavsList() {
 }
 
 function addFavToLog(id) {
-  const fav   = S_FAVS.find(f => f.id===id);
+  const fav = S_FAVS.find(f => f.id===id);
   if (!fav) return;
-  const today = todayStr();
-  const e     = getTodayEntry();
-  e.cal  = (e.cal||0) + fav.kcal;
-  e.note = e.note ? e.note + ' · ' + fav.name : fav.name;
-  upsert(S.daily, e); persist(); renderAll();
-
-  const totEl = document.getElementById('modal-cal-total');
-  if (totEl) totEl.textContent = S.daily.find(x=>x.date===today)?.cal||0;
-  const b = document.getElementById('ql-repas-badge');
-  if (b) { b.textContent=(S.daily.find(x=>x.date===today)?.cal||0)+' kcal'; b.style.display='block'; }
-
+  addMealEntry(fav.kcal, fav.name, fav.type||'');
   toast(`✓ ${fav.name} +${fav.kcal} kcal`);
 }
 
@@ -1845,9 +1958,7 @@ function deleteEntry(type, date) {
 }
 
 function addMealToLog(kcal, name) {
-  const inp = document.getElementById('inp-cal');
-  if (inp) inp.value = (parseInt(inp.value)||0)+kcal;
-  updateCalTarget();
+  addMealEntry(kcal, name, '');
   goTab('journal');
   toast(`✓ ${name} ajouté (${kcal} kcal)`);
 }
@@ -1866,6 +1977,7 @@ function renderAll() {
   renderLogs();
   updateExportStatus();
   updateTodayRecap();
+  renderMealRecap();
   const start = new Date(CFG.startDate+'T12:00:00');
   const diff  = Math.floor((Date.now()-start)/86400000);
   const week  = Math.min(13,Math.max(1,Math.floor(diff/7)+1));
