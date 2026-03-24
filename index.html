@@ -2476,9 +2476,19 @@ async function analysePhoto() {
         ]}]
       })
     });
-    if(!resp.ok){const err=await resp.json();throw new Error(err.error?.message||`Erreur ${resp.status}`);}
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      throw new Error(err.error?.message||`Erreur HTTP ${resp.status}`);
+    }
     const data=await resp.json();
-    const text=data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    // Handle both direct Anthropic response and wrapped response
+    const content = data.content || data?.data?.content || data?.choices;
+    if(!content || !Array.isArray(content)){
+      console.error('Unexpected response:', JSON.stringify(data).slice(0,300));
+      throw new Error('Réponse inattendue du serveur');
+    }
+    const text=content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    if(!text) throw new Error('Réponse vide');
     showPhotoResult(JSON.parse(text));
   } catch(err) { toast(`Erreur : ${err.message}`); }
   finally { btn.disabled=false; lbl.textContent='🔍 Analyser à nouveau'; }
