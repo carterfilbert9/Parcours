@@ -2582,6 +2582,20 @@ let authMode       = 'login';
 
 // ── AUTH INIT ──────────────────────────────────────────
 async function initAuth() {
+  // Handle OAuth redirect — Supabase returns tokens in URL hash
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    // Let Supabase parse the hash and establish the session
+    const { data, error } = await supa.auth.getSession();
+    // Clean URL
+    window.history.replaceState(null, '', window.location.pathname);
+    if (data?.session?.user) {
+      await onUserLoggedIn(data.session.user);
+      return;
+    }
+  }
+
+  // Normal session check
   const { data: { session } } = await supa.auth.getSession();
   if (session?.user) {
     await onUserLoggedIn(session.user);
@@ -2589,6 +2603,7 @@ async function initAuth() {
     showAuthScreen();
   }
 
+  // Listen for auth changes (handles popup-based OAuth too)
   supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
       await onUserLoggedIn(session.user);
@@ -2659,9 +2674,13 @@ function switchAuthTab(mode) {
 
 async function loginWithGoogle() {
   showAuthLoading(true);
+  const redirectTo = window.location.origin + window.location.pathname;
   const { error } = await supa.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.href }
+    options: {
+      redirectTo: redirectTo,
+      queryParams: { access_type: 'offline', prompt: 'consent' }
+    }
   });
   if (error) showAuthError(error.message);
   showAuthLoading(false);
