@@ -1664,6 +1664,56 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.app-shell').style.display = 'none';
   loadPrefs();
   initAuth();
+  // Make auth functions globally available (fixes ReferenceError on inline onclick)
+  window.submitAuth     = submitAuth;
+  window.loginWithGoogle = loginWithGoogle;
+  window.switchAuthTab  = switchAuthTab;
+  window.obNext         = obNext;
+  window.obFinish       = obFinish;
+  window.calcObCal      = calcObCal;
+  window.goTab          = goTab;
+  window.openModal      = openModal;
+  window.closeModal     = closeModal;
+  window.addWater       = addWater;
+  window.resetWater     = resetWater;
+  window.toggleActionMenu = toggleActionMenu;
+  window.closeActionMenu  = closeActionMenu;
+  window.saveSeance     = saveSeance;
+  window.saveRepas      = saveRepas;
+  window.saveSommeil    = saveSommeil;
+  window.savePoids      = savePoids || function(){};
+  window.savePoidsHebdo = savePoidsHebdo;
+  window.saveSleepNote  = saveSleepNote;
+  window.saveApiKey     = saveApiKey;
+  window.clearApiKey    = clearApiKey;
+  window.exportData     = exportData;
+  window.importData     = importData;
+  window.confirmReset   = confirmReset;
+  window.logout         = logout;
+  window.setSleep       = setSleep;
+  window.deleteEntry    = deleteEntry;
+  window.deleteMealFromToday = deleteMealFromToday;
+  window.addMealToLog   = addMealToLog;
+  window.addFavToLog    = addFavToLog;
+  window.deleteFav      = deleteFav;
+  window.saveAsFavorite = saveAsFavorite;
+  window.switchAuthTab  = switchAuthTab;
+  window.switchJournalTab = switchJournalTab;
+  window.switchRepasTab = switchRepasTab;
+  window.switchMealTab  = switchMealTab;
+  window.switchRepasModalTab = switchRepasModalTab;
+  window.searchFood     = searchFood;
+  window.selectFood     = selectFood;
+  window.generateAISuggestions = generateAISuggestions;
+  window.analysePhoto   = analysePhoto;
+  window.handlePhoto    = handlePhoto;
+  window.resetPhoto     = resetPhoto;
+  window.addAnalysisToLog = addAnalysisToLog;
+  window.savePrefs      = savePrefs;
+  window.updateModalCalTarget = updateModalCalTarget;
+  window.saveWeekly     = saveWeekly || function(){};
+  window.addWeeklyEntry = addWeeklyEntry;
+  window.addDailyEntry  = addDailyEntry;
 });
 
 // ══════════════════════════════════════════════════════
@@ -3120,17 +3170,30 @@ function switchAuthTab(mode) {
 }
 
 async function loginWithGoogle() {
-  showAuthLoading(true);
-  const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await supa.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: redirectTo,
-      queryParams: { access_type: 'offline', prompt: 'consent' }
+  try {
+    // Show loading on the Google button specifically
+    const btn = document.querySelector('.btn-google');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+    hideAuthError();
+
+    const redirectTo = window.location.origin + window.location.pathname;
+    const { error } = await supa.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectTo,
+        queryParams: { access_type: 'offline', prompt: 'consent' }
+      }
+    });
+    if (error) {
+      showAuthError(error.message);
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
     }
-  });
-  if (error) showAuthError(error.message);
-  showAuthLoading(false);
+    // If no error, page will redirect — no need to re-enable button
+  } catch(e) {
+    showAuthError('Erreur : ' + e.message);
+    const btn = document.querySelector('.btn-google');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  }
 }
 
 async function submitAuth() {
@@ -3167,10 +3230,11 @@ function hideAuthError() {
   if (el) el.style.display = 'none';
 }
 function showAuthLoading(show) {
-  const el = document.getElementById('auth-loading');
+  const el  = document.getElementById('auth-loading');
   const btn = document.getElementById('auth-submit-btn');
   if (el)  el.style.display  = show ? 'flex' : 'none';
   if (btn) btn.style.display = show ? 'none' : 'block';
+  // Never hide the Google button via this function
 }
 
 // ── ONBOARDING ─────────────────────────────────────────
