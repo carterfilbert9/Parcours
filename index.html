@@ -265,6 +265,10 @@ tr:last-child td{border-bottom:none}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;padding:2.2rem 1rem;color:var(--muted);font-size:.86rem}
 
+
+/* ── BARCODE SCANNER ─────────────────────────────── */
+#btn-barcode:hover { color: var(--accent); }
+
 /* ── SHOP ── */
 .shop-cat{font-family:var(--font-t);font-size:1rem;margin-bottom:.6rem}
 .shop-list{list-style:none}
@@ -854,13 +858,32 @@ canvas{width:100% !important}
     </div>
 
     <div id="mt-search">
-      <div class="search-bar"><span>🔍</span><input type="text" id="food-search-inp" placeholder="Rechercher un aliment…"></div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="food-search-inp" placeholder="Rechercher un aliment…">
+        <button id="btn-barcode" title="Scanner un code-barres" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:0 .2rem;transition:color .2s" title="Scanner un code-barres">📷</button>
+      </div>
       <div style="display:flex;gap:.45rem;align-items:center;margin-bottom:.55rem;flex-wrap:wrap">
         <span style="font-size:.72rem;color:var(--muted)">Quantité :</span>
         <input type="number" id="food-qty" value="100" min="1" max="2000" style="width:65px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.3rem .45rem;color:var(--text);font-size:.82rem;outline:none;text-align:center">
         <span style="font-size:.72rem;color:var(--muted)">g / ml</span>
+        <span style="font-size:.68rem;color:var(--muted);margin-left:auto" id="food-source"></span>
       </div>
-      <div id="food-results"><div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Tape un aliment pour rechercher</div></div>
+      <!-- Scanner code-barres -->
+      <div id="barcode-scanner" style="display:none;margin-bottom:.7rem">
+        <div style="position:relative;border-radius:var(--r-sm);overflow:hidden;background:#000">
+          <video id="barcode-video" style="width:100%;height:200px;object-fit:cover" playsinline muted></video>
+          <canvas id="barcode-canvas" style="display:none"></canvas>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+            <div style="width:70%;height:2px;background:rgba(232,201,122,.7);box-shadow:0 0 8px rgba(232,201,122,.5)"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.45rem">
+          <span style="font-size:.76rem;color:var(--muted)" id="scan-status">Pointe vers un code-barres…</span>
+          <button id="btn-stop-scan" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:var(--r-pill);padding:.28rem .65rem;font-size:.74rem;cursor:pointer">Arrêter</button>
+        </div>
+      </div>
+      <div id="food-results"><div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Tape un aliment ou scanne un code-barres</div></div>
     </div>
 
     <div id="mt-favs" style="display:none">
@@ -1686,25 +1709,175 @@ function switchRepasTab(tab){
   }
 }
 
-function searchFood(query){
-  const qty=parseInt(document.getElementById('food-qty')?.value)||100;
-  const res=document.getElementById('food-results');
-  if(!res) return;
-  if(!query||query.length<2){res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Tape un aliment</div>';return;}
+// ── LOCAL FALLBACK DB (used if OFF fails) ──────────
+function searchLocalDB(query, qty){
   const q=query.toLowerCase();
-  const hits=FOOD_DB.filter(f=>f.n.toLowerCase().includes(q)).slice(0,8);
-  if(!hits.length){res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Aucun résultat</div>';return;}
-  res.innerHTML=hits.map(f=>{
-    const k=Math.round(f.k*qty/100);
-    return '<div class="search-item" data-name="'+encodeURIComponent(f.n)+'" data-kcal="'+k+'" data-qty="'+qty+'" data-unit="'+f.u+'"><div><div class="si-name">'+f.n+'</div><div class="si-unit">'+qty+' '+f.u+' · '+f.k+' kcal/100'+f.u+'</div></div><div class="si-cal">'+k+' kcal</div></div>';
+  return FOOD_DB.filter(f=>f.n.toLowerCase().includes(q)).slice(0,5).map(f=>({
+    name:f.n, kcal100:f.k, unit:f.u, brand:'Base locale', barcode:null
+  }));
+}
+
+// ── RENDER SEARCH RESULTS ──────────────────────────
+function renderFoodResults(items, qty, source){
+  const res=document.getElementById('food-results');
+  const src=document.getElementById('food-source');
+  if(!res) return;
+  if(src) src.textContent = source||'';
+  if(!items.length){
+    res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Aucun résultat — essaie un autre terme</div>';
+    return;
+  }
+  res.innerHTML=items.map(function(f){
+    const k=Math.round(f.kcal100*qty/100);
+    const brandHtml=f.brand?'<div class="si-unit">'+f.brand+' · '+qty+''+f.unit+' · '+f.kcal100+' kcal/100'+f.unit+'</div>':'<div class="si-unit">'+qty+' '+f.unit+' · '+f.kcal100+' kcal/100'+f.unit+'</div>';
+    return '<div class="search-item" data-name="'+encodeURIComponent(f.name)+'" data-kcal="'+k+'" data-qty="'+qty+'" data-unit="'+f.unit+'">'+
+      '<div><div class="si-name">'+f.name+'</div>'+brandHtml+'</div>'+
+      '<div class="si-cal">'+k+' kcal</div></div>';
   }).join('');
-  res.querySelectorAll('.search-item').forEach(item=>{
+  res.querySelectorAll('.search-item').forEach(function(item){
     item.addEventListener('click',function(){
-      addMealEntry(this.dataset.kcal,decodeURIComponent(this.dataset.name)+'  ('+this.dataset.qty+this.dataset.unit+')','');
+      addMealEntry(parseInt(this.dataset.kcal),decodeURIComponent(this.dataset.name)+' ('+this.dataset.qty+this.dataset.unit+')','');
       closeModal('modal-repas');
       toast('✓ '+decodeURIComponent(this.dataset.name)+' ajouté !');
     });
   });
+}
+
+// ── OPEN FOOD FACTS SEARCH ─────────────────────────
+let searchTimer = null;
+function searchFood(query){
+  const qty=parseInt(document.getElementById('food-qty')?.value)||100;
+  const res=document.getElementById('food-results');
+  if(!res) return;
+  if(!query||query.length<2){
+    res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Tape un aliment ou scanne un code-barres</div>';
+    return;
+  }
+  // Show loading
+  res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem"><span class="spinner"></span> Recherche…</div>';
+  // Debounce 400ms
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(function(){
+    searchOpenFoodFacts(query, qty);
+  }, 400);
+}
+
+async function searchOpenFoodFacts(query, qty){
+  const res=document.getElementById('food-results');
+  try{
+    const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='+
+      encodeURIComponent(query)+'&json=1&page_size=10&action=process&fields=product_name,brands,nutriments,quantity,serving_size&lc=fr&cc=fr';
+    const resp=await fetch(url,{signal:AbortSignal.timeout(5000)});
+    if(!resp.ok) throw new Error('OFF error '+resp.status);
+    const data=await resp.json();
+    const products=data.products||[];
+    const items=products
+      .filter(p=>p.product_name && p.nutriments?.['energy-kcal_100g'])
+      .slice(0,8)
+      .map(p=>({
+        name: p.product_name.trim(),
+        kcal100: Math.round(p.nutriments['energy-kcal_100g']),
+        unit: 'g',
+        brand: p.brands?.split(',')[0]?.trim()||'',
+        barcode: null
+      }));
+    if(items.length){
+      renderFoodResults(items, qty, 'Open Food Facts');
+    } else {
+      // Fallback to local DB
+      const local=searchLocalDB(query, qty);
+      renderFoodResults(local, qty, 'Base locale');
+    }
+  }catch(e){
+    // Fallback to local DB on error
+    const local=searchLocalDB(query, qty);
+    renderFoodResults(local, qty, 'Base locale (hors-ligne)');
+  }
+}
+
+// ── BARCODE SCANNER ────────────────────────────────
+let barcodeStream=null;
+let barcodeInterval=null;
+let barcodeDetector=null;
+
+async function startBarcodeScanner(){
+  const scanner=document.getElementById('barcode-scanner');
+  const video=document.getElementById('barcode-video');
+  const status=document.getElementById('scan-status');
+  if(!scanner||!video) return;
+
+  // Check BarcodeDetector support
+  if(!('BarcodeDetector' in window)){
+    toast('Scanner non supporté sur cet appareil — utilise la recherche');
+    return;
+  }
+
+  try{
+    barcodeDetector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
+    barcodeStream=stream;
+    video.srcObject=stream;
+    await video.play();
+    scanner.style.display='block';
+    if(status) status.textContent='Pointe vers un code-barres…';
+
+    // Scan loop
+    barcodeInterval=setInterval(async function(){
+      if(video.readyState!==video.HAVE_ENOUGH_DATA) return;
+      try{
+        const barcodes=await barcodeDetector.detect(video);
+        if(barcodes.length){
+          const code=barcodes[0].rawValue;
+          stopBarcodeScanner();
+          if(status) status.textContent='Code détecté: '+code;
+          await lookupBarcode(code);
+        }
+      }catch(e){}
+    },300);
+  }catch(e){
+    toast('Accès caméra refusé ou indisponible');
+    stopBarcodeScanner();
+  }
+}
+
+function stopBarcodeScanner(){
+  if(barcodeInterval){clearInterval(barcodeInterval);barcodeInterval=null;}
+  if(barcodeStream){barcodeStream.getTracks().forEach(t=>t.stop());barcodeStream=null;}
+  const scanner=document.getElementById('barcode-scanner');
+  if(scanner) scanner.style.display='none';
+}
+
+async function lookupBarcode(code){
+  const qty=parseInt(document.getElementById('food-qty')?.value)||100;
+  const res=document.getElementById('food-results');
+  const status=document.getElementById('scan-status');
+  if(res) res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem"><span class="spinner"></span> Recherche du produit…</div>';
+  try{
+    const resp=await fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields=product_name,brands,nutriments,quantity',{signal:AbortSignal.timeout(5000)});
+    const data=await resp.json();
+    if(data.status!==1||!data.product){
+      if(res) res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Produit non trouvé dans Open Food Facts</div>';
+      return;
+    }
+    const p=data.product;
+    const kcal100=Math.round(p.nutriments?.['energy-kcal_100g']||0);
+    if(!kcal100){
+      if(res) res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Données nutritionnelles manquantes pour ce produit</div>';
+      return;
+    }
+    const items=[{
+      name: p.product_name||'Produit scanné',
+      kcal100: kcal100,
+      unit: 'g',
+      brand: p.brands?.split(',')[0]?.trim()||''
+    }];
+    // Also fill search input
+    const inp=document.getElementById('food-search-inp');
+    if(inp) inp.value=p.product_name||code;
+    renderFoodResults(items, qty, '📷 Code: '+code);
+  }catch(e){
+    if(res) res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Erreur: '+e.message+'</div>';
+  }
 }
 
 function renderFavsList(){
@@ -2096,6 +2269,7 @@ function openModal(id){
 function closeModal(id){
   const m=document.getElementById('modal-'+id);if(!m)return;
   m.classList.remove('open');document.body.style.overflow='';
+  if(id==='repas') stopBarcodeScanner();
 }
 
 // ══════════════════════════════════════════════════════
@@ -2183,6 +2357,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // ── Food search ──
   document.getElementById('food-search-inp').addEventListener('input', function(){ searchFood(this.value); });
   document.getElementById('food-qty').addEventListener('change', function(){ searchFood(document.getElementById('food-search-inp').value); });
+  document.getElementById('btn-barcode').addEventListener('click', function(){ startBarcodeScanner(); });
+  document.getElementById('btn-stop-scan').addEventListener('click', function(){ stopBarcodeScanner(); });
 
   // ── Repas manual ──
   document.getElementById('btn-save-repas').addEventListener('click', function(){ saveRepasManuel(); });
