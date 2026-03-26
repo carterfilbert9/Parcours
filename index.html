@@ -886,12 +886,12 @@ canvas { width: 100% !important; }
     <!-- Sommeil + cible calories du jour -->
     <div class="stat-row">
       <div class="card card-sm">
-        <div class="card-label">Sommeil hier</div>
+        <div class="card-label">Sommeil du jour</div>
         <div class="big-stat" id="h-sleep" style="color:var(--accent4);font-size:2rem">—</div>
         <div style="font-size:.72rem;color:var(--muted)" id="h-sleep-q"></div>
       </div>
       <div class="card card-sm">
-        <div class="card-label">Calories hier</div>
+        <div class="card-label">Calories du jour</div>
         <div class="big-stat" id="h-cal-eaten" style="color:var(--orange);font-size:2rem">—</div>
         <div style="font-size:.72rem;color:var(--muted)" id="h-cal-target-label"></div>
       </div>
@@ -1983,18 +1983,35 @@ function renderMealRecap() {
       hBar.style.background = pct > 100 ? 'var(--danger)' : pct > 80 ? 'var(--accent)' : 'var(--orange)';
     }
     if (hList) {
-      hList.innerHTML = meals.map((m,i) => `
-        <div class="meal-recap-item">
-          <div>
-            <div class="meal-recap-name">${m.name}</div>
-            <div class="meal-recap-type">${m.type||''} ${m.time ? '· '+m.time : ''}</div>
+      // Group by meal type
+      const ICONS = {'Petit-dej':'🌅','Dejeuner':'☀️','Diner':'🌙','Collation':'🍎','':'🍽️'};
+      const LABELS = {'Petit-dej':'Petit-déj','Dejeuner':'Déjeuner','Diner':'Dîner','Collation':'Collation','':'Repas'};
+      const ORDER  = ['Petit-dej','Dejeuner','Collation','Diner',''];
+      const groups = {};
+      meals.forEach((m,i) => {
+        const t = m.type||'';
+        if (!groups[t]) groups[t] = [];
+        groups[t].push({...m, idx:i});
+      });
+      hList.innerHTML = ORDER.filter(t=>groups[t]).map(t => {
+        const gMeals = groups[t];
+        const gKcal  = gMeals.reduce((s,m)=>s+m.kcal,0);
+        return `<div style="margin-bottom:.6rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">${ICONS[t]||'🍽️'} ${LABELS[t]||'Repas'}</div>
+            <div style="font-size:.78rem;color:var(--accent);font-weight:600">${gKcal} kcal</div>
           </div>
-          <div style="display:flex;align-items:center;gap:.4rem">
-            <div class="meal-recap-kcal">${m.kcal}</div>
-            <span style="font-size:.7rem;color:var(--muted)">kcal</span>
-            <button class="meal-recap-del" onclick="deleteMealFromToday(${i})">✕</button>
-          </div>
-        </div>`).join('');
+          ${gMeals.map(m=>`
+          <div class="meal-recap-item">
+            <div class="meal-recap-name" style="flex:1">${m.name}</div>
+            <div style="display:flex;align-items:center;gap:.4rem">
+              <div class="meal-recap-kcal">${m.kcal}</div>
+              <span style="font-size:.7rem;color:var(--muted)">kcal</span>
+              <button class="meal-recap-del" onclick="deleteMealFromToday(${m.idx})">✕</button>
+            </div>
+          </div>`).join('')}
+        </div>`;
+      }).join('');
     }
   }
 
@@ -2407,15 +2424,17 @@ function renderHome() {
   document.getElementById('h-remaining').textContent = rem.toFixed(1);
   document.getElementById('h-progress-bar').style.width = pct+'%';
 
-  // last daily entry for sleep/cal
-  const lastD = S.daily.length ? S.daily[S.daily.length-1] : null;
+  // TODAY's data
+  const today = todayStr();
+  const todayD = S.daily.find(e=>e.date===today) || null;
   const slEl  = document.getElementById('h-sleep');
   const slQ   = document.getElementById('h-sleep-q');
   const calEl = document.getElementById('h-cal-eaten');
   const calTL = document.getElementById('h-cal-target-label');
-  if (lastD?.sleep) { slEl.textContent=lastD.sleep+'h'; slQ.textContent=lastD.sleepQ?['','😩','😐','🙂','😊','🌟'][lastD.sleepQ]:''; }
+  const calLbl = document.getElementById('h-cal-label');
+  if (todayD?.sleep) { slEl.textContent=todayD.sleep+'h'; slQ.textContent=todayD.sleepQ?['','😩','😐','🙂','😊','🌟'][todayD.sleepQ]:''; }
   else { slEl.textContent='—'; slQ.textContent=''; }
-  if (lastD?.cal) { calEl.textContent=lastD.cal; calTL.textContent=`/ ${lastD.target||calcTargetFromEntry(lastD)} kcal cible`; }
+  if (todayD?.cal) { calEl.textContent=todayD.cal; calTL.textContent=`/ ${todayD.target||calcTargetFromEntry(todayD)} kcal cible`; }
   else { calEl.textContent='—'; calTL.textContent=''; }
 
   // mensurations
@@ -2675,15 +2694,26 @@ function showPhotoResult(r) {
   document.getElementById('r-conf').textContent    = Math.round(r.confidence)+'%';
   document.getElementById('r-conf-bar').style.width= Math.round(r.confidence)+'%';
   document.getElementById('r-note').textContent    = r.note||'';
-  document.getElementById('btn-add-analysis').style.display='block';
+  // Add meal type selector above the add button
+  const addBtn = document.getElementById('btn-add-analysis');
+  if (addBtn) {
+    addBtn.style.display='block';
+    // Add type selector if not already there
+    if (!document.getElementById('photo-meal-type')) {
+      const sel = document.createElement('select');
+      sel.id = 'photo-meal-type';
+      sel.style.cssText = 'width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.6rem .85rem;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none;margin-bottom:.6rem';
+      sel.innerHTML = '<option value="">Type de repas…</option><option value="Petit-dej">🌅 Petit-déj</option><option value="Dejeuner">☀️ Déjeuner</option><option value="Collation">🍎 Collation</option><option value="Diner">🌙 Dîner</option>';
+      addBtn.parentNode.insertBefore(sel, addBtn);
+    }
+  }
 }
 
 function addAnalysisToLog() {
   if(!lastAnalysis)return;
-  const kcal=Math.round(lastAnalysis.kcal);
-  const inp=document.getElementById('inp-cal');
-  if(inp) inp.value=(parseInt(inp.value)||0)+kcal;
-  updateCalTarget();
+  const kcal = Math.round(lastAnalysis.kcal);
+  const type = document.getElementById('photo-meal-type')?.value || '';
+  addMealEntry(kcal, lastAnalysis.meal_name || 'Repas scanné', type);
   goTab('journal');
   toast(`✓ ${lastAnalysis.meal_name} ajouté (${kcal} kcal)`);
 }
@@ -2814,8 +2844,7 @@ function applyProfile(p) {
   CFG.calBase     = p.cal_base      || 2200;
   CFG.startDate   = p.start_date    || new Date().toISOString().split('T')[0];
   // Update home greeting
-  const homeDate = document.getElementById('home-date');
-  if (homeDate) homeDate.textContent = `Bonjour ${p.name || ''} 👋`;
+  // home greeting handled by updateUserAvatar
 }
 
 function showAuthScreen() {
