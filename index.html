@@ -1319,6 +1319,13 @@ function calcTarget(e){
 }
 function getApiKey(){try{return localStorage.getItem('pdc_api_key')||'';}catch{return '';}}
 
+async function getJWT(){
+  try{
+    const {data:{session}} = await supa.auth.getSession();
+    return session?.access_token||'';
+  }catch{return '';}
+}
+
 // ══════════════════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════════════════
@@ -1825,17 +1832,17 @@ function resetPhoto(){
 }
 
 async function analysePhoto(){
-  const key=getApiKey();
-  if(!key){toast('Configure ta clé API dans Réglages');return;}
   if(!photoB64){toast('Importe une photo');return;}
   const btn=document.getElementById('btn-analyse');
   const lbl=document.getElementById('analyse-lbl');
   if(btn)btn.disabled=true;
   if(lbl)lbl.innerHTML='<span class="spinner"></span> Analyse…';
   try{
+    const jwt=await getJWT();
+    if(!jwt){toast('Connecte-toi pour utiliser cette fonctionnalité');return;}
     const resp=await fetch(PROXY,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt,'anthropic-version':'2023-06-01'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',max_tokens:800,
         messages:[{role:'user',content:[
@@ -1935,8 +1942,6 @@ function buildShop(){
 function updateAICardSub(){
   const sub=document.getElementById('ai-card-sub');
   if(!sub)return;
-  const key=getApiKey();
-  if(!key){sub.textContent='Clé API requise — voir Réglages';return;}
   const cal=currentProfile?.cal_base||CFG.calBase;
   const gt=currentProfile?.goal_type||'loss';
   const pr=currentProfile?.protocol||'standard';
@@ -1946,10 +1951,8 @@ function updateAICardSub(){
 }
 
 async function generateAISuggestions(){
-  const key=getApiKey();
   const btn=document.getElementById('btn-ai-gen');
   const res=document.getElementById('ai-result');
-  if(!key){toast('Configure ta clé API dans Réglages');goTab('settings');return;}
   if(btn){btn.disabled=true;btn.textContent='Génération...';}
   if(res)res.style.display='none';
   const cal=currentProfile?.cal_base||CFG.calBase;
@@ -1961,7 +1964,9 @@ async function generateAISuggestions(){
   const eaten=(S.daily.find(e=>e.date===t)?.meals||[]).map(m=>m.name).join(', ')||'rien';
   const prompt='Coach nutrition. 3 repas adaptés: objectif='+gl+', protocole='+pl+', cible='+cal+'kcal/j, déjà mangé='+eaten+'. JSON uniquement: {"meals":[{"name":"nom","type":"Dejeuner","kcal":700,"proteines":"45g","ingredients":"...","tip":"conseil","time":"12 min"}]}. Types: Petit-dej,Dejeuner,Diner,Collation';
   try{
-    const resp=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:900,messages:[{role:'user',content:prompt}]})});
+    const jwt=await getJWT();
+    if(!jwt){toast('Connecte-toi pour utiliser cette fonctionnalité');return;}
+    const resp=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+jwt,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:900,messages:[{role:'user',content:prompt}]})});
     if(!resp.ok)throw new Error('Erreur '+resp.status);
     const data=await resp.json();
     const txt=(data.content||[]).map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
@@ -2250,11 +2255,10 @@ function switchJournalTab(tab){
     const btn=document.getElementById('jt-'+t+'-btn');if(btn)btn.classList.toggle('active',t===tab);
   });
   if(tab==='photo'){
-    const key=getApiKey();
     const nk=document.getElementById('photo-no-key');
     const ui=document.getElementById('photo-ui');
-    if(nk)nk.style.display=key?'none':'block';
-    if(ui)ui.style.display=key?'block':'none';
+    if(nk)nk.style.display='none';
+    if(ui)ui.style.display='block';
   }
 }
 
