@@ -37,9 +37,6 @@
 
 /* ── RESET ──────────────────────────────────────────── */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-/* ── ACCESSIBILITÉ : focus visible clavier ── */
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
-:focus:not(:focus-visible) { outline: none; }
 html, body { height:100%; overflow:hidden; }
 body {
   background: var(--bg);
@@ -631,32 +628,10 @@ canvas { width: 100% !important; }
 /* ── DIVIDER ────────────────────────────────────────── */
 .divider { border: none; border-top: 1px solid var(--border); margin: .8rem 0; }
 
-/* ── SKELETON LOADER ────────────────────────────────── */
-.skeleton {
-  background: linear-gradient(90deg, var(--card2) 25%, var(--card) 50%, var(--card2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: var(--r-sm);
-}
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-.sk-line { height: 14px; margin-bottom: .5rem; }
-.sk-big  { height: 40px; width: 80px; }
-.sk-bar  { height: 8px; width: 100%; }
-
-/* ── NETWORK ERROR BANNER ───────────────────────────── */
-.net-error {
-  background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25);
-  border-radius: var(--r-sm); padding: .75rem 1rem;
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: .9rem; font-size: .83rem; color: var(--danger);
-}
-.net-error button { background: none; border: 1px solid var(--danger); color: var(--danger); border-radius: var(--r-pill); padding: .25rem .75rem; font-size: .78rem; cursor: pointer; }
-
 /* ── SCROLLBAR ──────────────────────────────────────── */
 .page { scrollbar-width: thin; scrollbar-color: var(--card2) transparent; }
 .page::-webkit-scrollbar { width: 3px; }
 .page::-webkit-scrollbar-thumb { background: var(--card2); border-radius: 3px; }
-
 </style>
 </head>
 <body>
@@ -743,7 +718,41 @@ canvas { width: 100% !important; }
     </div>
   </div>
 
-  <!-- STEP 2 : Objectif calorique -->\n  <div class=\"onboarding-step\" id=\"ob-step2\">\n    <div style=\"max-width:400px;margin:0 auto\">\n      <div class=\"onboarding-title\">Ton objectif</div>\n      <div class=\"onboarding-sub\">On calcule ta cible calorique</div>\n      <div class=\"card\">\n        <div class=\"form-row\">\n          <div class=\"field\">\n            <label>Age</label>\n            <input type=\"number\" id=\"ob-age\" placeholder=\"ex: 34\" aria-label=\"Ton âge\">\n          </div>\n          <div class=\"field\">\n            <label>Taille (cm)</label>\n            <input type=\"number\" id=\"ob-height\" placeholder=\"ex: 180\" aria-label=\"Ta taille en centimètres\">\n          </div>\n          <div class=\"field field-full\">\n            <label>Sexe biologique</label>\n            <select id=\"ob-sex\" style=\"width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.65rem .85rem;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none\" aria-label=\"Sexe biologique pour le calcul calorique\">\n              <option value=\"male\">Homme</option>\n              <option value=\"female\">Femme</option>\n            </select>\n          </div>\n          <div class=\"field field-full\">\n            <label>Niveau activité</label>\n            <select id=\"ob-activity\" style=\"width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.65rem .85rem;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none\" aria-label=\"Niveau d'activité physique\">\n              <option value=\"1.2\">Sédentaire (bureau, peu de sport)</option>\n              <option value=\"1.4\" selected>Légèrement actif (1-2 sport/sem)</option>\n              <option value=\"1.55\">Modérément actif (3-5 sport/sem)</option>\n              <option value=\"1.725\">Très actif (sport intense quotidien)</option>\n            </select>\n          </div>\n        </div>\n        <div id=\"ob-cal-result\" style=\"background:var(--card2);border-radius:var(--r-sm);padding:.9rem;margin-bottom:.9rem;display:none\">\n          <div style=\"font-size:.72rem;color:var(--muted);margin-bottom:.3rem\">CIBLE CALORIQUE CALCULÉE</div>\n          <div style=\"font-family:var(--font-t);font-size:2rem;color:var(--accent)\" id=\"ob-cal-value\">—</div>\n          <div style=\"font-size:.75rem;color:var(--muted)\" id=\"ob-cal-detail\">kcal/jour</div>\n        </div>\n        <button class=\"btn btn-secondary\" style=\"margin-bottom:.6rem\" onclick=\"calcObCal()\">Calculer ma cible</button>\n        <button class=\"btn btn-primary\" onclick=\"obNext(2)\">Continuer →</button>\n      </div>\n    </div>\n  </div>
+  <!-- STEP 2 : Objectif calorique -->
+  <div class="onboarding-step" id="ob-step2">
+    <div style="max-width:400px;margin:0 auto">
+      <div class="onboarding-title">Ton objectif</div>
+      <div class="onboarding-sub">On calcule ta cible calorique</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="field">
+            <label>Age</label>
+            <input type="number" id="ob-age" placeholder="ex: 34">
+          </div>
+          <div class="field">
+            <label>Taille (cm)</label>
+            <input type="number" id="ob-height" placeholder="ex: 180">
+          </div>
+          <div class="field field-full">
+            <label>Niveau activité</label>
+            <select id="ob-activity" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.65rem .85rem;color:var(--text);font-size:.9rem;outline:none;-webkit-appearance:none">
+              <option value="1.2">Sédentaire (bureau, peu de sport)</option>
+              <option value="1.4" selected>Légèrement actif (1-2 sport/sem)</option>
+              <option value="1.55">Modérément actif (3-5 sport/sem)</option>
+              <option value="1.725">Très actif (sport intense quotidien)</option>
+            </select>
+          </div>
+        </div>
+        <div id="ob-cal-result" style="background:var(--card2);border-radius:var(--r-sm);padding:.9rem;margin-bottom:.9rem;display:none">
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:.3rem">CIBLE CALORIQUE CALCULÉE</div>
+          <div style="font-family:var(--font-t);font-size:2rem;color:var(--accent)" id="ob-cal-value">—</div>
+          <div style="font-size:.75rem;color:var(--muted)" id="ob-cal-detail">kcal/jour</div>
+        </div>
+        <button class="btn btn-secondary" style="margin-bottom:.6rem" onclick="calcObCal()">Calculer ma cible</button>
+        <button class="btn btn-primary" onclick="obNext(2)">Continuer →</button>
+      </div>
+    </div>
+  </div>
 
   <!-- STEP 3 : Protocole -->
   <div class="onboarding-step" id="ob-step3">
@@ -786,15 +795,9 @@ canvas { width: 100% !important; }
         <div class="home-greeting-week" id="home-date"></div>
         <div class="home-greeting-week">Semaine <span id="home-week">1</span>/13 · <span id="home-week-dates" style="color:var(--muted)"></span></div>
       </div>
-      <button class="user-avatar-btn" id="user-avatar-btn" onclick="goTab('settings')" title="Paramètres" aria-label="Accéder aux paramètres">
+      <button class="user-avatar-btn" id="user-avatar-btn" onclick="goTab('settings')" title="Paramètres">
         <span id="user-avatar-initials">?</span>
       </button>
-    </div>
-
-    <!-- Bannière erreur réseau -->
-    <div id="net-error-banner" class="net-error" style="display:none" role="alert">
-      <span>⚠️ Impossible de charger tes données</span>
-      <button onclick="retryLoadData()" aria-label="Réessayer de charger les données">Réessayer</button>
     </div>
 
     <!-- Poids progress -->
@@ -852,12 +855,12 @@ canvas { width: 100% !important; }
         <div class="pbar-fill" id="h-water-bar" style="width:0%;background:linear-gradient(90deg,var(--accent2),#a8d8f0)"></div>
       </div>
       <div class="hydra-btns">
-        <button class="btn-water" onclick="addWater(15)" aria-label="Ajouter 15 centilitres d'eau">+15cl ☕</button>
-        <button class="btn-water" onclick="addWater(25)" aria-label="Ajouter 25 centilitres d'eau">+25cl 🥤</button>
-        <button class="btn-water" onclick="addWater(50)" aria-label="Ajouter 50 centilitres d'eau">+50cl 💧</button>
-        <button class="btn-water" onclick="addWater(100)" aria-label="Ajouter 100 centilitres d'eau">+100cl 🍶</button>
-        <button class="btn-water" onclick="addWater(-50)" style="border-color:var(--border);color:var(--muted)" aria-label="Retirer 50 centilitres d'eau">−50cl</button>
-        <button class="btn-water" onclick="resetWater()" style="border-color:var(--border);color:var(--muted)" aria-label="Remettre l'hydratation à zéro">↺</button>
+        <button class="btn-water" onclick="addWater(15)">+15cl ☕</button>
+        <button class="btn-water" onclick="addWater(25)">+25cl 🥤</button>
+        <button class="btn-water" onclick="addWater(50)">+50cl 💧</button>
+        <button class="btn-water" onclick="addWater(100)">+100cl 🍶</button>
+        <button class="btn-water" onclick="addWater(-50)" style="border-color:var(--border);color:var(--muted)">−50cl</button>
+        <button class="btn-water" onclick="resetWater()" style="border-color:var(--border);color:var(--muted)">↺</button>
       </div>
     </div>
 
@@ -940,36 +943,24 @@ canvas { width: 100% !important; }
 
       <!-- QUICK LOG -->
       <div class="quick-log" style="grid-template-columns:1fr 1fr 1fr">
-        <button class="ql-btn sport" onclick="openModal('sport')" aria-label="Ajouter une séance sportive">
+        <button class="ql-btn sport" onclick="openModal('sport')">
           <div class="ql-icon">🏃</div>
           <div>Séance</div>
           <div class="ql-label">Ajouter</div>
           <div class="ql-badge green" id="ql-sport-badge" style="display:none"></div>
         </button>
-        <button class="ql-btn repas" onclick="openModal('repas')" aria-label="Ajouter un repas">
+        <button class="ql-btn repas" onclick="openModal('repas')">
           <div class="ql-icon">🍽️</div>
           <div>Repas</div>
           <div class="ql-label">Ajouter</div>
           <div class="ql-badge orange" id="ql-repas-badge" style="display:none"></div>
         </button>
-        <button class="ql-btn" onclick="openModal('sommeil')" style="--ql-color:var(--accent4)" aria-label="Saisir le sommeil">
+        <button class="ql-btn" onclick="openModal('sommeil')" style="--ql-color:var(--accent4)">
           <div class="ql-icon">😴</div>
           <div>Sommeil</div>
           <div class="ql-label">Saisir</div>
           <div class="ql-badge" id="ql-sleep-badge" style="display:none;background:rgba(167,139,250,.15);color:var(--accent4)"></div>
         </button>
-      </div>
-
-      <!-- PESÉE RAPIDE DU JOUR -->
-      <div class="card card-sm" style="margin-bottom:.9rem">
-        <div style="display:flex;gap:.6rem;align-items:flex-end">
-          <div class="field" style="flex:1;margin:0">
-            <label>⚖️ Poids du jour (kg)</label>
-            <input type="number" id="inp-weight-today" step="0.1" placeholder="ex: 109.5" style="font-size:1rem" aria-label="Entrer ton poids du jour en kilogrammes">
-          </div>
-          <button class="btn btn-primary btn-sm" style="margin-bottom:.05rem;white-space:nowrap" onclick="savePoidsToday()" aria-label="Enregistrer le poids d'aujourd'hui">✓ Peser</button>
-        </div>
-        <div id="poids-today-confirm" style="font-size:.75rem;color:var(--success);margin-top:.4rem;display:none"></div>
       </div>
 
       <!-- HIDDEN: chips/dur containers used by JS (also built in modal) -->
@@ -1012,9 +1003,20 @@ canvas { width: 100% !important; }
         </div>
       </details>
 
-      <!-- LOG déplacé dans Stats → Historique (US-06) -->
-      <div style="font-size:.75rem;color:var(--muted);text-align:center;padding:.6rem;background:var(--card2);border-radius:var(--r-sm)">
-        📊 L'historique complet est disponible dans <button onclick="goTab('stats');switchStatsTab('history')" style="background:none;border:none;color:var(--accent);font-size:.75rem;cursor:pointer;font-weight:600;padding:0">Stats → 🗂 Historique</button>
+      <!-- LOG -->
+      <div class="card-label" style="margin:1rem 0 .5rem">Historique</div>
+      <div class="card" style="padding:.8rem">
+        <div class="log-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th><th>Poids</th><th>Δ</th><th>Séances</th>
+                <th>Cal.</th><th>Cible</th><th>Sommeil</th><th>Note</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="log-daily"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1048,14 +1050,25 @@ canvas { width: 100% !important; }
         <button class="btn btn-primary" onclick="addWeeklyEntry()">Enregistrer le bilan semaine</button>
       </div>
 
-      <!-- Historique hebdo déplacé dans Stats (US-06) -->
-      <div style="font-size:.75rem;color:var(--muted);text-align:center;padding:.6rem;background:var(--card2);border-radius:var(--r-sm);margin-top:.9rem">
-        📊 L'historique hebdo est disponible dans <button onclick="goTab('stats');switchStatsTab('history')" style="background:none;border:none;color:var(--accent);font-size:.75rem;cursor:pointer;font-weight:600;padding:0">Stats → 🗂 Historique</button>
+      <div class="card-label" style="margin:1rem 0 .5rem">Historique hebdo</div>
+      <div class="card" style="padding:.8rem">
+        <div class="log-scroll">
+          <table>
+            <thead><tr><th>Date</th><th>Poids</th><th>Δ</th><th>Taille</th><th>Poitrine</th><th>Note</th><th></th></tr></thead>
+            <tbody id="log-weekly"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <!-- PHOTO TAB -->
     <div id="jtab-photo" style="display:none">
+      <div id="photo-no-key" style="display:none" class="card">
+        <div style="text-align:center;padding:1rem;color:var(--muted);font-size:.85rem">
+          📷 Configure ta clé API dans <strong>Paramètres</strong> pour activer l'analyse photo.
+          <button class="btn btn-secondary btn-sm" style="margin-top:.8rem;display:block;width:100%" onclick="goTab('settings')">⚙️ Aller aux Paramètres</button>
+        </div>
+      </div>
       <div id="photo-ui">
         <div class="card">
           <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()">
@@ -1113,71 +1126,26 @@ canvas { width: 100% !important; }
       </div>
     </div>
 
-    <!-- Onglets Stats / Historique (US-06) -->
-    <div class="seg-ctrl" style="margin-bottom:1rem">
-      <button class="seg-btn active" id="stab-btn-graphs" onclick="switchStatsTab('graphs')" aria-label="Voir les graphiques">📈 Graphiques</button>
-      <button class="seg-btn" id="stab-btn-history" onclick="switchStatsTab('history')" aria-label="Voir l'historique">🗂 Historique</button>
+    <div class="card">
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">⚖️ Évolution du poids</div>
+      <canvas id="chart-weight" height="180"></canvas>
     </div>
-
-    <!-- TAB GRAPHIQUES -->
-    <div id="stab-graphs">
-      <div class="card">
-        <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">⚖️ Évolution du poids</div>
-        <canvas id="chart-weight" height="180"></canvas>
-      </div>
-      <div class="card">
-        <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">🔥 Calories consommées</div>
-        <canvas id="chart-cal" height="180"></canvas>
-        <div style="font-size:.68rem;color:var(--muted);margin-top:.4rem">
-          <span style="color:var(--success)">■</span> Dans la cible &nbsp;
-          <span style="color:var(--accent2)">■</span> Repos &nbsp;
-          <span style="color:var(--danger)">■</span> Dépassement
-        </div>
-      </div>
-      <div class="card">
-        <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">📏 Mensurations (cm)</div>
-        <canvas id="chart-mensur" height="180"></canvas>
-      </div>
-      <div class="card">
-        <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">😴 Sommeil (heures)</div>
-        <canvas id="chart-sleep" height="160"></canvas>
+    <div class="card">
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">🔥 Calories consommées</div>
+      <canvas id="chart-cal" height="180"></canvas>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:.4rem">
+        <span style="color:var(--success)">■</span> Dans la cible &nbsp;
+        <span style="color:var(--accent2)">■</span> Repos &nbsp;
+        <span style="color:var(--danger)">■</span> Dépassement
       </div>
     </div>
-
-    <!-- TAB HISTORIQUE (US-06) -->
-    <div id="stab-history" style="display:none">
-      <!-- Historique quotidien -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-        <div class="card-label" style="margin:0">📆 Entrées quotidiennes</div>
-        <span style="font-size:.72rem;color:var(--muted)" id="hist-daily-count"></span>
-      </div>
-      <div class="card" style="padding:.8rem;margin-bottom:1rem">
-        <div class="log-scroll">
-          <table role="table" aria-label="Historique quotidien">
-            <thead>
-              <tr>
-                <th>Date</th><th>Poids</th><th>Δ</th><th>Séances</th>
-                <th>Cal.</th><th>Cible</th><th>Sommeil</th><th>Note</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="log-daily"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Historique hebdomadaire -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-        <div class="card-label" style="margin:0">📅 Bilans hebdomadaires</div>
-        <span style="font-size:.72rem;color:var(--muted)" id="hist-weekly-count"></span>
-      </div>
-      <div class="card" style="padding:.8rem">
-        <div class="log-scroll">
-          <table role="table" aria-label="Historique hebdomadaire">
-            <thead><tr><th>Date</th><th>Poids</th><th>Δ</th><th>Taille</th><th>Poitrine</th><th>Note</th><th></th></tr></thead>
-            <tbody id="log-weekly"></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="card">
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">📏 Mensurations (cm)</div>
+      <canvas id="chart-mensur" height="180"></canvas>
+    </div>
+    <div class="card">
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">😴 Sommeil (heures)</div>
+      <canvas id="chart-sleep" height="160"></canvas>
     </div>
   </div>
 
@@ -1196,36 +1164,16 @@ canvas { width: 100% !important; }
     </div>
 
     <div id="rtab-suggestions">
-      <!-- Bouton génération IA (US-10) -->
-      <div class="card" style="margin-bottom:.9rem">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem">
-          <div>
-            <div style="font-size:.88rem;font-weight:600">✨ Suggestions personnalisées</div>
-            <div style="font-size:.73rem;color:var(--muted);margin-top:.15rem" id="ai-meal-context">Chargement du profil…</div>
-          </div>
-          <button class="btn btn-primary btn-sm" id="btn-generate-meals" onclick="generateMealSuggestions()" aria-label="Générer des suggestions de repas personnalisées">
-            <span id="generate-lbl">🤖 Générer mes repas</span>
-          </button>
-        </div>
-        <div id="ai-meal-result" style="display:none"></div>
+      <div class="meal-tabs" id="meal-tabs-bar">
+        <button class="mtab active" onclick="switchMealTab('dejeuner')">☀️ Déjeuner</button>
+        <button class="mtab" onclick="switchMealTab('diner')">🌙 Dîner</button>
+        <button class="mtab" onclick="switchMealTab('collation')">🍎 Collation</button>
+        <button class="mtab" onclick="switchMealTab('weekend')">🥐 Week-end</button>
       </div>
-
-      <!-- Suggestions statiques en fallback -->
-      <div id="static-meals-section">
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;padding:.35rem .6rem;background:var(--card2);border-radius:var(--r-sm)">
-          📚 Recettes de base — ou génère des suggestions adaptées à ton profil ci-dessus
-        </div>
-        <div class="meal-tabs" id="meal-tabs-bar">
-          <button class="mtab active" onclick="switchMealTab('dejeuner')">☀️ Déjeuner</button>
-          <button class="mtab" onclick="switchMealTab('diner')">🌙 Dîner</button>
-          <button class="mtab" onclick="switchMealTab('collation')">🍎 Collation</button>
-          <button class="mtab" onclick="switchMealTab('weekend')">🥐 Week-end</button>
-        </div>
-        <div id="meals-dejeuner"></div>
-        <div id="meals-diner"     style="display:none"></div>
-        <div id="meals-collation" style="display:none"></div>
-        <div id="meals-weekend"   style="display:none"></div>
-      </div>
+      <div id="meals-dejeuner"></div>
+      <div id="meals-diner"     style="display:none"></div>
+      <div id="meals-collation" style="display:none"></div>
+      <div id="meals-weekend"   style="display:none"></div>
     </div>
 
     <div id="rtab-courses" style="display:none" id="shop-container"></div>
@@ -1240,19 +1188,23 @@ canvas { width: 100% !important; }
       </div>
     </div>
 
-    <!-- STATUT ANALYSEUR PHOTO (US-03 : clé côté serveur) -->
+    <!-- API KEY -->
     <div class="card">
-      <div style="display:flex;align-items:center;gap:.6rem">
-        <div class="api-dot" id="api-dot" aria-hidden="true"></div>
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem">
+        <div class="api-dot off" id="api-dot"></div>
         <div>
-          <div style="font-size:.9rem;font-weight:600" id="api-status-title">Analyseur photo</div>
-          <div style="font-size:.72rem;color:var(--muted)" id="api-status-sub">Vérifie la connexion…</div>
+          <div style="font-size:.9rem;font-weight:600" id="api-status-title">Analyseur photo non configuré</div>
+          <div style="font-size:.72rem;color:var(--muted)" id="api-status-sub">Clé API Anthropic requise</div>
         </div>
       </div>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:.8rem;background:var(--card2);border-radius:var(--r-sm);padding:.6rem .8rem;line-height:1.6">
-        🔒 La clé API est sécurisée côté serveur.<br>
-        Aucune configuration requise de ta part.
+      <div class="api-key-row">
+        <input type="password" class="api-key-input" id="api-key-input" placeholder="sk-ant-api03-...">
+        <button class="btn btn-secondary btn-sm" onclick="saveApiKey()">Sauvegarder</button>
       </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem">
+        Clé stockée uniquement sur cet appareil. Obtiens la tienne sur <span style="color:var(--accent4)">console.anthropic.com</span>
+      </div>
+      <button class="btn btn-danger btn-sm" style="margin-top:.7rem" onclick="clearApiKey()">Effacer la clé</button>
     </div>
 
     <!-- LOGOUT -->
@@ -1262,7 +1214,7 @@ canvas { width: 100% !important; }
           <div style="font-size:.9rem;font-weight:600" id="settings-user-name">Mon compte</div>
           <div style="font-size:.75rem;color:var(--muted)" id="settings-user-email"></div>
         </div>
-        <button class="btn btn-danger btn-sm" onclick="logout()" aria-label="Se déconnecter">Déconnexion</button>
+        <button class="btn btn-danger btn-sm" onclick="logout()">Déconnexion</button>
       </div>
     </div>
 
@@ -1271,40 +1223,67 @@ canvas { width: 100% !important; }
       <div style="font-size:.9rem;font-weight:600;margin-bottom:.3rem">💾 Données</div>
       <div style="font-size:.75rem;color:var(--muted);margin-bottom:.8rem" id="export-status">Aucune donnée</div>
       <div style="display:flex;flex-direction:column;gap:.5rem">
-        <button class="btn btn-secondary" onclick="exportData()" aria-label="Exporter mes données au format JSON">⬇️ Exporter mes données (JSON)</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()" aria-label="Importer une sauvegarde JSON">⬆️ Importer une sauvegarde</button>
-        <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display:none" aria-label="Choisir un fichier de sauvegarde">
-        <button class="btn btn-danger" onclick="confirmReset()" aria-label="Effacer toutes les données">🗑 Effacer toutes les données</button>
+        <button class="btn btn-secondary" onclick="exportData()">⬇️ Exporter mes données (JSON)</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">⬆️ Importer une sauvegarde</button>
+        <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display:none">
+        <button class="btn btn-danger" onclick="confirmReset()">🗑 Effacer toutes les données</button>
       </div>
     </div>
 
-    <!-- OBJECTIFS CALORIQUES DYNAMIQUES (US-08) -->
+    <!-- OBJECTIFS INFO -->
     <div class="card">
-      <div style="font-size:.9rem;font-weight:600;margin-bottom:.4rem">🎯 Objectifs caloriques</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.8rem">Calculés depuis ton profil · Base repos : <span id="settings-cal-base" style="color:var(--accent2)">—</span> kcal</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem" id="settings-cal-grid">
-        <!-- Peuplé dynamiquement par renderCalSettings() -->
+      <div style="font-size:.9rem;font-weight:600;margin-bottom:.8rem">🎯 Objectifs caloriques</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+        <div style="background:var(--card2);border-radius:var(--r-sm);padding:.6rem">
+          <div style="font-size:.65rem;color:var(--muted)">🪑 Repos</div>
+          <div style="font-family:var(--font-t);font-size:1.4rem;color:var(--accent2)">2 200</div>
+          <div style="font-size:.65rem;color:var(--muted)">kcal</div>
+        </div>
+        <div style="background:var(--card2);border-radius:var(--r-sm);padding:.6rem">
+          <div style="font-size:.65rem;color:var(--muted)">🏃 Course seule</div>
+          <div style="font-family:var(--font-t);font-size:1.4rem;color:var(--success)">2 750</div>
+          <div style="font-size:.65rem;color:var(--muted)">kcal</div>
+        </div>
+        <div style="background:var(--card2);border-radius:var(--r-sm);padding:.6rem">
+          <div style="font-size:.65rem;color:var(--muted)">🪝 KB seul</div>
+          <div style="font-family:var(--font-t);font-size:1.4rem;color:var(--success)">2 600</div>
+          <div style="font-size:.65rem;color:var(--muted)">kcal</div>
+        </div>
+        <div style="background:var(--card2);border-radius:var(--r-sm);padding:.6rem">
+          <div style="font-size:.65rem;color:var(--muted)">⚽ Futsal</div>
+          <div style="font-family:var(--font-t);font-size:1.4rem;color:var(--success)">2 900</div>
+          <div style="font-size:.65rem;color:var(--muted)">kcal</div>
+        </div>
+        <div style="background:var(--card2);border-radius:var(--r-sm);padding:.6rem">
+          <div style="font-size:.65rem;color:var(--muted)">🏃+🪝 Course+KB</div>
+          <div style="font-family:var(--font-t);font-size:1.4rem;color:var(--accent)">3 150</div>
+          <div style="font-size:.65rem;color:var(--muted)">kcal</div>
+        </div>
+        <div style="background:var(--card2);border-radius:var(--r-sm);padding:.6rem">
+          <div style="font-size:.65rem;color:var(--muted)">🪢 Corde 20min</div>
+          <div style="font-family:var(--font-t);font-size:1.4rem;color:var(--success)">2 480</div>
+          <div style="font-size:.65rem;color:var(--muted)">kcal</div>
+        </div>
       </div>
-      <button class="btn btn-secondary btn-sm" style="margin-top:.8rem" onclick="openRecalcModal()" aria-label="Recalculer ma cible calorique">🔄 Recalculer ma cible</button>
     </div>
   </div>
 
   <!-- ══ NAV BAR ════════════════════════════════════════ -->
-  <nav class="nav-bar" role="navigation" aria-label="Navigation principale">
-    <button class="nav-item active" id="nav-home" onclick="goTab('home')" aria-label="Accueil">
-      <span class="nav-icon" aria-hidden="true">🏠</span><span>Accueil</span>
+  <nav class="nav-bar">
+    <button class="nav-item active" id="nav-home" onclick="goTab('home')">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
     </button>
-    <button class="nav-item" id="nav-journal" onclick="goTab('journal')" aria-label="Journal">
-      <span class="nav-icon" aria-hidden="true">📆</span><span>Journal</span>
+    <button class="nav-item" id="nav-journal" onclick="goTab('journal')">
+      <span class="nav-icon">📆</span><span>Journal</span>
     </button>
-    <button class="fab" id="fab-btn" onclick="toggleActionMenu()" aria-label="Ouvrir le menu d'actions rapides" aria-expanded="false">
-      <span class="fab-icon" id="fab-icon" aria-hidden="true">＋</span>
+    <button class="fab" id="fab-btn" onclick="toggleActionMenu()">
+      <span class="fab-icon" id="fab-icon">＋</span>
     </button>
-    <button class="nav-item" id="nav-stats" onclick="goTab('stats')" aria-label="Statistiques">
-      <span class="nav-icon" aria-hidden="true">📊</span><span>Stats</span>
+    <button class="nav-item" id="nav-stats" onclick="goTab('stats')">
+      <span class="nav-icon">📊</span><span>Stats</span>
     </button>
-    <button class="nav-item" id="nav-settings" onclick="goTab('settings')" aria-label="Paramètres">
-      <span class="nav-icon" aria-hidden="true">⚙️</span><span>Réglages</span>
+    <button class="nav-item" id="nav-repas" onclick="goTab('repas')">
+      <span class="nav-icon">🍽️</span><span>Repas</span>
     </button>
   </nav>
 
@@ -1312,29 +1291,31 @@ canvas { width: 100% !important; }
 
   
 <!-- ══ ACTION MENU ════════════════════════════════════ -->
-<div class="action-menu-backdrop" id="action-menu-backdrop" onclick="closeActionMenu()" role="dialog" aria-modal="true" aria-label="Menu d'actions rapides">
+<div class="action-menu-backdrop" id="action-menu-backdrop" onclick="closeActionMenu()">
   <div class="action-menu" onclick="event.stopPropagation()">
-    <div class="action-title">Actions rapides</div>
+    <div class="action-title">Que veux-tu faire ?</div>
 
-    <!-- Action unique large : Scanner -->
-    <div class="action-row-wide" style="margin-bottom:.6rem">
-      <button class="action-btn action-btn-wide" onclick="closeActionMenu();switchJournalTab('photo');goTab('journal')" aria-label="Scanner un repas avec l'IA">
-        <div class="action-btn-icon" aria-hidden="true">📷</div>
-        <div><div class="action-btn-label">Scanner un repas</div><div class="action-btn-sub">Analyse IA des calories</div></div>
-      </button>
-    </div>
-
-    <!-- 2 actions secondaires -->
+    <!-- 2x2 grid -->
     <div class="action-row">
-      <button class="action-btn" onclick="closeActionMenu();openModal('sport')" aria-label="Ajouter une activité sportive">
-        <div class="action-btn-icon" aria-hidden="true">🏃</div>
-        <div class="action-btn-label">Activité</div>
+      <button class="action-btn" onclick="closeActionMenu();switchJournalTab('photo');goTab('journal')">
+        <div class="action-btn-icon">📷</div>
+        <div class="action-btn-label">Scanner un repas</div>
+        <div class="action-btn-sub">Analyse IA</div>
+      </button>
+      <button class="action-btn" onclick="closeActionMenu();openModal('sport')">
+        <div class="action-btn-icon">🏃</div>
+        <div class="action-btn-label">Ajouter une activité</div>
         <div class="action-btn-sub">Course, KB, Futsal…</div>
       </button>
-      <button class="action-btn" onclick="closeActionMenu();goTab('repas')" aria-label="Voir les suggestions de repas">
-        <div class="action-btn-icon" aria-hidden="true">🍽️</div>
-        <div class="action-btn-label">Repas</div>
-        <div class="action-btn-sub">Suggestions & courses</div>
+      <button class="action-btn" onclick="closeActionMenu();switchJournalTab('weekly');goTab('journal')">
+        <div class="action-btn-icon">📅</div>
+        <div class="action-btn-label">Bilan de la semaine</div>
+        <div class="action-btn-sub">Poids & mensurations</div>
+      </button>
+      <button class="action-btn" onclick="closeActionMenu();openModal('repas');switchRepasModalTab('search')">
+        <div class="action-btn-icon">🥗</div>
+        <div class="action-btn-label">Ajouter un ingrédient</div>
+        <div class="action-btn-sub">Base de 108 aliments</div>
       </button>
     </div>
   </div>
@@ -1343,9 +1324,9 @@ canvas { width: 100% !important; }
 <!-- ══ MODALS ══════════════════════════════════════════ -->
 
   <!-- SPORT MODAL -->
-  <div id="modal-sport" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-sport')" role="dialog" aria-modal="true" aria-label="Ajouter une séance sportive">
+  <div id="modal-sport" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-sport')">
     <div class="mini-modal">
-      <div class="mini-modal-handle" aria-hidden="true"></div>
+      <div class="mini-modal-handle"></div>
       <div class="mini-modal-title">🏃 Ajouter une séance</div>
       <div class="card-label" style="margin-bottom:.5rem">Séance</div>
       <div class="chips" id="modal-chips" style="margin-bottom:.7rem"></div>
@@ -1367,9 +1348,9 @@ canvas { width: 100% !important; }
   </div>
 
   <!-- REPAS MODAL -->
-  <div id="modal-repas" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-repas')" role="dialog" aria-modal="true" aria-label="Ajouter un repas">
+  <div id="modal-repas" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-repas')">
     <div class="mini-modal">
-      <div class="mini-modal-handle" aria-hidden="true"></div>
+      <div class="mini-modal-handle"></div>
       <div class="mini-modal-title">🍽️ Ajouter un repas</div>
 
       <!-- TABS -->
@@ -1444,28 +1425,28 @@ canvas { width: 100% !important; }
 
 
   <!-- SOMMEIL MODAL -->
-  <div id="modal-sommeil" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-sommeil')" role="dialog" aria-modal="true" aria-label="Saisir le sommeil">
+  <div id="modal-sommeil" class="mini-modal-backdrop" style="display:none" onclick="closeModalOutside(event,'modal-sommeil')">
     <div class="mini-modal">
-      <div class="mini-modal-handle" aria-hidden="true"></div>
+      <div class="mini-modal-handle"></div>
       <div class="mini-modal-title">😴 Saisir le sommeil</div>
       <div class="mini-form-row" style="margin-bottom:.8rem">
         <div class="field" style="flex:1">
-          <label for="modal-sleep-h">Durée (heures)</label>
-          <input type="number" id="modal-sleep-h" step="0.5" min="0" max="14" placeholder="7.5" style="font-size:1.1rem" aria-label="Durée du sommeil en heures">
+          <label>Durée (heures)</label>
+          <input type="number" id="modal-sleep-h" step="0.5" min="0" max="14" placeholder="7.5" style="font-size:1.1rem">
         </div>
         <div class="field" style="flex:1">
-          <label id="sleep-quality-label">Qualité</label>
-          <div class="sleep-stars" id="sleep-stars" role="radiogroup" aria-labelledby="sleep-quality-label">
-            <span class="sstar" onclick="setSleep(1)" role="radio" aria-checked="false" aria-label="Mauvais sommeil" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')setSleep(1)">😩</span>
-            <span class="sstar" onclick="setSleep(2)" role="radio" aria-checked="false" aria-label="Sommeil moyen" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')setSleep(2)">😐</span>
-            <span class="sstar" onclick="setSleep(3)" role="radio" aria-checked="false" aria-label="Sommeil correct" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')setSleep(3)">🙂</span>
-            <span class="sstar" onclick="setSleep(4)" role="radio" aria-checked="false" aria-label="Bon sommeil" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')setSleep(4)">😊</span>
-            <span class="sstar" onclick="setSleep(5)" role="radio" aria-checked="false" aria-label="Excellent sommeil" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')setSleep(5)">🌟</span>
+          <label>Qualité</label>
+          <div class="sleep-stars" id="sleep-stars" style="margin-top:.6rem">
+            <span class="sstar" onclick="setSleep(1)">😩</span>
+            <span class="sstar" onclick="setSleep(2)">😐</span>
+            <span class="sstar" onclick="setSleep(3)">🙂</span>
+            <span class="sstar" onclick="setSleep(4)">😊</span>
+            <span class="sstar" onclick="setSleep(5)">🌟</span>
           </div>
-          <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem" id="modal-sleep-q-label" aria-live="polite">Qualité ?</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem" id="modal-sleep-q-label">Qualité ?</div>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="saveSommeil()" aria-label="Enregistrer le sommeil">✓ Enregistrer</button>
+      <button class="btn btn-primary" onclick="saveSommeil()">✓ Enregistrer</button>
     </div>
   </div>
 
@@ -1568,7 +1549,6 @@ function goTab(tab) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const page = document.getElementById(`page-${tab}`);
-  if (!page) return;
   page.classList.add('active');
   page.classList.remove('page-enter');
   void page.offsetWidth;
@@ -1576,15 +1556,8 @@ function goTab(tab) {
   const navEl = document.getElementById(`nav-${tab}`);
   if (navEl) navEl.classList.add('active');
   currentTab = tab;
-  if (tab === 'stats') {
-    renderCharts();
-    renderLogs(); // pré-charger l'historique en arrière-plan
-  }
-  if (tab === 'repas') {
-    renderShop();
-    updateAiMealContext();
-  }
-  if (tab === 'settings') renderCalSettings();
+  if (tab === 'stats') renderCharts();
+  if (tab === 'repas') renderShop();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1616,13 +1589,11 @@ function buildChips() {
 
 function buildMeals() {
   Object.entries(MEALS).forEach(([tab, meals]) => {
-    const container = document.getElementById(`meals-${tab}`);
-    if (!container) return;
-    container.innerHTML = meals.map(m => `
-      <div class="meal-card" role="article" aria-label="${m.name}">
+    document.getElementById(`meals-${tab}`).innerHTML = meals.map(m => `
+      <div class="meal-card">
         <div class="meal-head">
           <div class="meal-name">${m.name}</div>
-          <div class="meal-badge" aria-label="Temps de préparation : ${m.time}">⏱ ${m.time}</div>
+          <div class="meal-badge">⏱ ${m.time}</div>
         </div>
         <div class="meal-macros">
           <span class="mpill mp-kcal">${m.kcal} kcal</span>
@@ -1630,80 +1601,27 @@ function buildMeals() {
         </div>
         <div class="meal-ing">${m.ing}</div>
         <div class="meal-tip">💡 ${m.tip}</div>
-        <button class="btn-meal-add" onclick="addMealToLog(${m.kcal},'${m.name.replace(/'/g,"\\'")}')"
-          aria-label="Ajouter ${m.name} au journal (${m.kcal} kcal)">
+        <button class="btn-meal-add" onclick="addMealToLog(${m.kcal},'${m.name.replace(/'/g,"\\'")}')">
           ＋ Ajouter au journal (${m.kcal} kcal)
         </button>
       </div>`).join('');
   });
-  // US-10 : adapter les onglets selon le protocole
-  renderMealTabs();
 }
 
 function renderShop() {
   const container = document.getElementById('rtab-courses');
-  if (!container) return;
-
-  // US-11 : reset automatique chaque lundi
-  const todayDay = new Date().getDay(); // 1 = lundi
-  const lastReset = localStorage.getItem('pdc_shop_reset_week') || '';
-  const currentWeek = getISOWeek();
-  if (todayDay === 1 && lastReset !== currentWeek) {
-    localStorage.removeItem('pdc_shop_checked');
-    localStorage.setItem('pdc_shop_reset_week', currentWeek);
-  }
-
-  // Charge l'état des cases cochées
-  let checked = {};
-  try { checked = JSON.parse(localStorage.getItem('pdc_shop_checked') || '{}'); } catch {}
-
-  container.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem">
-      <div style="font-size:.75rem;color:var(--muted)">Coche les articles déjà achetés · Reset auto le lundi</div>
-      <button class="btn btn-secondary btn-sm" onclick="resetShop()" aria-label="Décocher tous les articles">Tout décocher</button>
-    </div>` +
-    SHOP.map(cat => `
+  if (container.innerHTML.trim()) return;
+  container.innerHTML = SHOP.map(cat => `
     <div class="card" style="margin-bottom:.8rem">
       <div class="shop-cat" style="color:${cat.color}">${cat.title}</div>
-      <ul class="shop-list" role="list">
-        ${cat.items.map((item, i) => {
-          const key = `${cat.title}::${item[0]}`;
-          const done = !!checked[key];
-          return `<li role="listitem" style="${done ? 'opacity:.45' : ''}">
-            <label style="display:flex;align-items:center;gap:.5rem;flex:1;cursor:pointer">
-              <input type="checkbox" ${done ? 'checked' : ''} onchange="toggleShopItem('${key.replace(/'/g,"\\'")}',this.checked)"
-                style="accent-color:var(--success);width:15px;height:15px;flex-shrink:0"
-                aria-label="${item[0]}">
-              <span class="${i<3 ? 'shop-hl' : ''}" style="${done ? 'text-decoration:line-through' : ''}">${item[0]}</span>
-            </label>
+      <ul class="shop-list">
+        ${cat.items.map((item,i) => `
+          <li>
+            <span class="${i<3?'shop-hl':''}">${item[0]}</span>
             <span class="shop-tag">${item[1]}</span>
-          </li>`;
-        }).join('')}
+          </li>`).join('')}
       </ul>
     </div>`).join('');
-}
-
-function getISOWeek() {
-  const d = new Date();
-  d.setHours(0,0,0,0);
-  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-  const y = d.getFullYear();
-  const w = Math.ceil((((d - new Date(y,0,1)) / 86400000) + 1) / 7);
-  return `${y}-W${w}`;
-}
-
-function toggleShopItem(key, checked) {
-  let state = {};
-  try { state = JSON.parse(localStorage.getItem('pdc_shop_checked') || '{}'); } catch {}
-  if (checked) state[key] = true; else delete state[key];
-  localStorage.setItem('pdc_shop_checked', JSON.stringify(state));
-  renderShop(); // re-render pour appliquer le style barré
-}
-
-function resetShop() {
-  localStorage.removeItem('pdc_shop_checked');
-  renderShop();
-  toast('✓ Liste réinitialisée');
 }
 
 // ══════════════════════════════════════════════════════
@@ -1775,13 +1693,11 @@ function setSleep(n) {
   S.sleepRating = n;
   const inp = document.getElementById('inp-sleep');
   if (inp) inp.dataset.quality = n;
-  document.querySelectorAll('.sstar').forEach((s,i) => {
-    s.classList.toggle('on', i<n);
-    s.setAttribute('aria-checked', i === n-1 ? 'true' : 'false'); // US-13
-  });
+  document.querySelectorAll('.sstar').forEach((s,i) => s.classList.toggle('on', i<n));
   const lbl = document.getElementById('modal-sleep-q-label');
+  const labels = ['','Mauvais 😩','Moyen 😐','Correct 🙂','Bon 😊','Excellent 🌟'];
   if (lbl) {
-    lbl.textContent = n > 0 ? SLEEP_LABELS[n] : 'Qualité ?';
+    lbl.textContent = n > 0 ? labels[n] : 'Qualite ?';
     lbl.style.color = n>=4?'var(--success)':n>=3?'var(--accent)':n>0?'var(--danger)':'var(--muted)';
   }
 }
@@ -1845,51 +1761,29 @@ function openModal(type) {
     if (calEl) calEl.value = '';
     const descEl = document.getElementById('modal-repas-desc');
     if (descEl) descEl.value = '';
+    // Default to search tab
     switchRepasModalTab('search');
     setTimeout(() => document.getElementById('food-search-input')?.focus(), 100);
   }
 
+  if (type === 'poids') {
+    // poids modal removed
+  }
   if (type === 'sommeil') {
     const el = document.getElementById('modal-sleep-h');
     if (el) el.value = '';
     setSleep(0);
   }
-
-  // Pré-remplir le champ poids si déjà saisi aujourd'hui (US-09)
-  const wtEl = document.getElementById('inp-weight-today');
-  const todayD = S.daily.find(x => x.date === today);
-  if (wtEl && todayD?.weight) {
-    wtEl.value = todayD.weight;
-    const confirm = document.getElementById('poids-today-confirm');
-    if (confirm) { confirm.textContent = `✓ ${todayD.weight} kg déjà saisi`; confirm.style.display = 'block'; }
-  }
 }
 
 function closeModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = 'none';
+  document.getElementById(id).style.display = 'none';
   document.body.style.overflow = '';
-  // Retourner le focus à l'élément déclencheur (US-13)
-  const trigger = document.querySelector(`[data-modal-trigger="${id}"]`);
-  if (trigger) trigger.focus();
 }
 
 function closeModalOutside(event, id) {
   if (event.target.classList.contains('mini-modal-backdrop')) closeModal(id);
 }
-
-// Fermeture des modals avec Escape (US-13)
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    ['modal-sport','modal-repas','modal-sommeil'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.style.display !== 'none') closeModal(id);
-    });
-    if (document.getElementById('action-menu-backdrop')?.classList.contains('open')) {
-      closeActionMenu();
-    }
-  }
-});
 
 function isModalChk(id) { return !!document.getElementById(`mchk-${id}`)?.checked; }
 function getModalDur(id) { const el=document.getElementById(`mdur-${id}`); return el?(parseInt(el.value)||ACTS[id].defMin):ACTS[id].defMin; }
@@ -1928,19 +1822,6 @@ function updateModalCalTarget() {
   if(kEl) kEl.textContent=totalBurned;
 }
 
-
-function savePoidsToday() {
-  const weight = parseFloat(document.getElementById('inp-weight-today')?.value);
-  if (isNaN(weight) || weight <= 0) { toast('Entre un poids valide'); return; }
-  const e = getTodayEntry();
-  e.weight = weight;
-  upsert(S.daily, e, 'daily'); persist(); renderAll();
-  const confirm = document.getElementById('poids-today-confirm');
-  if (confirm) { confirm.textContent = `✓ ${weight} kg enregistré`; confirm.style.display = 'block'; }
-  const inp = document.getElementById('inp-weight-today');
-  if (inp) inp.value = '';
-  toast(`✓ Poids ${weight} kg enregistré !`);
-}
 
 function savePoidsHebdo() {
   const weight = parseFloat(document.getElementById('inp-w-weight-quick').value);
@@ -2070,11 +1951,10 @@ function updateTodayRecap() {
 // ══════════════════════════════════════════════════════
 function deleteMealFromToday(idx) {
   const today = todayStr();
-  const e = S.daily.find(x => x.date === today);
+  const e = S.daily.find(x=>x.date===today);
   if (!e || !e.meals) return;
   const removed = e.meals.splice(idx, 1)[0];
   e.cal = Math.max(0, (e.cal||0) - (removed?.kcal||0));
-  upsert(S.daily, e, 'daily'); // ← US-01 : sync base après suppression
   persist(); renderAll();
   toast('Repas supprimé');
 }
@@ -2391,202 +2271,8 @@ function deleteFav(id) {
 
 
 // ══════════════════════════════════════════════════════
-// US-10 : SUGGESTIONS REPAS IA DYNAMIQUES
+// ACTION MENU (FAB)
 // ══════════════════════════════════════════════════════
-function updateAiMealContext() {
-  const el = document.getElementById('ai-meal-context');
-  if (!el || !currentProfile) return;
-  const proto = { standard:'3 repas/jour', ji16:'Jeûne 16/8', ji18:'Jeûne 18/6', omad:'OMAD' }[currentProfile.protocol] || '';
-  const goal  = { loss:'Perte de poids 🎯', maintain:'Maintien ⚖️', muscle:'Prise de muscle 💪', sport:'Performance 🏆' }[currentProfile.goal_type] || '';
-  const cal   = CFG.calBase;
-  el.textContent = `${goal} · ${proto} · ${cal} kcal/j`;
-}
-
-async function generateMealSuggestions() {
-  if (!currentProfile) { toast('Profil non chargé'); return; }
-
-  const btn = document.getElementById('btn-generate-meals');
-  const lbl = document.getElementById('generate-lbl');
-  const result = document.getElementById('ai-meal-result');
-  btn.disabled = true;
-  lbl.innerHTML = '<span class="spinner"></span> Génération…';
-  result.style.display = 'none';
-
-  // Construire le contexte utilisateur
-  const proto    = { standard:'3 repas par jour', ji16:'jeûne intermittent 16/8 (fenêtre 12h-20h)', ji18:'jeûne intermittent 18/6', omad:'OMAD (1 seul repas par jour)' }[currentProfile.protocol] || '3 repas par jour';
-  const goal     = { loss:'perte de poids', maintain:'maintien du poids', muscle:'prise de muscle', sport:'performance sportive' }[currentProfile.goal_type] || 'perte de poids';
-  const calBase  = CFG.calBase;
-  const name     = currentProfile.name || 'l\'utilisateur';
-  // Récupérer les repas déjà mangés aujourd'hui pour éviter les répétitions
-  const today    = todayStr();
-  const todayEntry = S.daily.find(e => e.date === today);
-  const alreadyEaten = (todayEntry?.meals || []).map(m => m.name).join(', ') || 'aucun pour l\'instant';
-  const calLeft  = calBase - (todayEntry?.cal || 0);
-
-  const prompt = `Tu es un nutritionniste expert. Génère exactement 3 suggestions de repas personnalisées pour ${name}.
-
-PROFIL :
-- Objectif : ${goal}
-- Protocole alimentaire : ${proto}
-- Cible calorique journalière : ${calBase} kcal
-- Calories restantes aujourd'hui : ${calLeft} kcal
-- Déjà mangé aujourd'hui : ${alreadyEaten}
-
-CONTRAINTES :
-- Adapte les portions et les recettes à l'objectif (${goal})
-- Respecte le protocole ${proto}
-- Propose des repas simples, rapides (<20 min), avec des ingrédients courants
-- Varie les sources de protéines
-- Pour la perte de poids : privilégie protéines et légumes, limite les glucides raffinés
-- Pour la prise de muscle : augmente les protéines et les glucides complexes
-- Pour le maintien : équilibre macro-nutriments
-- Pour la performance : glucides complexes avant effort, protéines après
-
-Réponds UNIQUEMENT en JSON valide, sans markdown, sans commentaire :
-[
-  {
-    "moment": "Déjeuner|Dîner|Collation|Petit-déj",
-    "name": "Nom du repas",
-    "time": "X min",
-    "kcal": nombre,
-    "proteines": "Xg",
-    "ingredients": "ingrédient 1 · ingrédient 2 · ingrédient 3",
-    "tip": "conseil pratique court"
-  }
-]`;
-
-  try {
-    const data = await callProxy({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1200,
-      messages: [{ role: 'user', content: prompt }],
-    });
-    const text = (data.content || []).map(c => c.text || '').join('').replace(/```json|```/g, '').trim();
-    const meals = JSON.parse(text);
-    renderAiMeals(meals);
-  } catch(err) {
-    result.style.display = 'block';
-    result.innerHTML = `<div style="font-size:.82rem;color:var(--danger)">⚠️ ${err.message}</div>`;
-    toast('Erreur de génération');
-  } finally {
-    btn.disabled = false;
-    lbl.textContent = '🤖 Régénérer';
-  }
-}
-
-function renderAiMeals(meals) {
-  const result = document.getElementById('ai-meal-result');
-  result.style.display = 'block';
-  result.innerHTML = meals.map(m => `
-    <div class="meal-card" style="border-color:rgba(167,139,250,0.25);margin-bottom:.8rem">
-      <div class="meal-head">
-        <div>
-          <div style="font-size:.65rem;color:var(--accent4);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">✨ ${m.moment}</div>
-          <div class="meal-name">${m.name}</div>
-        </div>
-        <div class="meal-badge">⏱ ${m.time}</div>
-      </div>
-      <div class="meal-macros">
-        <span class="mpill mp-kcal">${m.kcal} kcal</span>
-        <span class="mpill mp-prot">${m.proteines} prot</span>
-      </div>
-      <div class="meal-ing">${m.ingredients}</div>
-      <div class="meal-tip">💡 ${m.tip}</div>
-      <button class="btn-meal-add" onclick="addMealToLog(${m.kcal},'${m.name.replace(/'/g,"\\'")}','${m.moment}')"
-        aria-label="Ajouter ${m.name} au journal (${m.kcal} kcal)">
-        ＋ Ajouter au journal (${m.kcal} kcal)
-      </button>
-    </div>`).join('');
-}
-// ══════════════════════════════════════════════════════
-function renderCalSettings() {
-  const base = CFG.calBase;
-  const baseEl = document.getElementById('settings-cal-base');
-  if (baseEl) baseEl.textContent = base.toLocaleString('fr-FR');
-
-  const grid = document.getElementById('settings-cal-grid');
-  if (!grid) return;
-
-  const activities = [
-    { label: '🪑 Repos',        bonus: 0,   color: 'var(--accent2)' },
-    { label: '🏃 Course',       bonus: ACTS.course.kcal, color: 'var(--success)' },
-    { label: '🪝 Kettlebell',   bonus: ACTS.kb.kcal,     color: 'var(--success)' },
-    { label: '⚽ Futsal',       bonus: ACTS.futsal.kcal,  color: 'var(--success)' },
-    { label: '🏃+🪝 Course+KB', bonus: ACTS.course.kcal + ACTS.kb.kcal, color: 'var(--accent)' },
-    { label: '🪢 Corde 20min',  bonus: Math.round(ACTS.corde.kmin * 20), color: 'var(--success)' },
-  ];
-
-  grid.innerHTML = activities.map(a => {
-    const total = base + a.bonus;
-    return `<div style="background:var(--card2);border-radius:var(--r-sm);padding:.6rem">
-      <div style="font-size:.65rem;color:var(--muted)">${a.label}</div>
-      <div style="font-family:var(--font-t);font-size:1.4rem;color:${a.color}">${total.toLocaleString('fr-FR')}</div>
-      <div style="font-size:.65rem;color:var(--muted)">kcal${a.bonus > 0 ? ` (+${a.bonus})` : ''}</div>
-    </div>`;
-  }).join('');
-}
-
-function openRecalcModal() {
-  // Recalcul inline depuis les paramètres — réutilise calcObCal avec les données du profil
-  if (!currentProfile) { toast('Profil non chargé'); return; }
-  const age    = prompt('Ton âge actuel ?', '30');
-  const height = prompt('Ta taille en cm ?', '175');
-  if (!age || !height) return;
-  const sex    = currentProfile.sex || 'male';
-  const activ  = currentProfile.activity || 1.4;
-  const weight = CFG.startWeight;
-  const constant = sex === 'female' ? -161 : 5;
-  const mb     = 10 * weight + 6.25 * parseFloat(height) - 5 * parseFloat(age) + constant;
-  const tdee   = Math.round(mb * activ);
-  const target = Math.max(1200, tdee - 700);
-  CFG.calBase  = target;
-  // Persist dans le profil
-  if (currentUser) {
-    supa.from('profiles').update({ cal_base: target }).eq('id', currentUser.id);
-    if (currentProfile) currentProfile.cal_base = target;
-  }
-  renderCalSettings();
-  renderAll();
-  toast(`✓ Nouvelle cible : ${target.toLocaleString('fr-FR')} kcal/j`);
-}
-
-// ══════════════════════════════════════════════════════
-// SUGGESTIONS REPAS CONTEXTUALISÉES (US-10)
-// ══════════════════════════════════════════════════════
-function getVisibleMealTabs() {
-  const protocol = currentProfile?.protocol || 'standard';
-  const allTabs = [
-    { id: 'dejeuner',  label: '☀️ Déjeuner' },
-    { id: 'diner',     label: '🌙 Dîner' },
-    { id: 'collation', label: '🍎 Collation' },
-    { id: 'weekend',   label: '🥐 Week-end' },
-  ];
-  if (protocol === 'omad') {
-    return [{ id: 'dejeuner', label: '🍽️ Repas unique' }, { id: 'weekend', label: '🥐 Week-end' }];
-  }
-  if (protocol === 'ji16' || protocol === 'ji18') {
-    // Pas de petit-dej, collation restreinte
-    return allTabs; // les onglets restent mais une mention est ajoutée
-  }
-  return allTabs;
-}
-
-function renderMealTabs() {
-  const bar = document.getElementById('meal-tabs-bar');
-  if (!bar) return;
-  const protocol = currentProfile?.protocol || 'standard';
-  const tabs = getVisibleMealTabs();
-  bar.innerHTML = tabs.map((t, i) => `
-    <button class="mtab ${i===0?'active':''}" onclick="switchMealTab('${t.id}')" aria-label="${t.label}">${t.label}</button>
-  `).join('');
-  // Ajouter mention JI si applicable
-  if (protocol === 'ji16' || protocol === 'ji18') {
-    const note = document.createElement('div');
-    note.style.cssText = 'font-size:.72rem;color:var(--accent4);margin-bottom:.6rem;padding:.4rem .6rem;background:rgba(167,139,250,0.08);border-radius:var(--r-sm)';
-    note.textContent = `⏰ Protocole ${protocol === 'ji16' ? '16/8' : '18/6'} actif — fenêtre alimentaire recommandée`;
-    bar.parentNode.insertBefore(note, bar.nextSibling);
-  }
-}
 function toggleActionMenu() {
   const backdrop = document.getElementById('action-menu-backdrop');
   const fab      = document.getElementById('fab-btn');
@@ -2596,12 +2282,6 @@ function toggleActionMenu() {
   } else {
     backdrop.classList.add('open');
     fab.classList.add('open');
-    fab.setAttribute('aria-expanded', 'true');
-    // Focus-trap : focus sur le premier bouton du menu
-    setTimeout(() => {
-      const first = backdrop.querySelector('.action-btn, .action-btn-wide');
-      if (first) first.focus();
-    }, 50);
   }
 }
 
@@ -2610,25 +2290,17 @@ function closeActionMenu() {
   const fab      = document.getElementById('fab-btn');
   backdrop.classList.remove('open');
   fab.classList.remove('open');
-  fab.setAttribute('aria-expanded', 'false');
-  fab.focus();
 }
 
 function updateUserAvatar() {
   const initials = document.getElementById('user-avatar-initials');
   const greetEl  = document.getElementById('home-greeting-name');
   if (!initials || !greetEl) return;
-  const name  = currentProfile?.name || currentUser?.user_metadata?.full_name || '';
-  const email = currentUser?.email || '';
+  const name = currentProfile?.name || currentUser?.user_metadata?.full_name || '';
   const first = name.split(' ')[0] || '';
   const ini   = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
   initials.textContent = ini;
   greetEl.textContent  = first ? `Bonjour ${first} 👋` : 'Bonjour 👋';
-  // Peupler les champs settings
-  const snEl = document.getElementById('settings-user-name');
-  const seEl = document.getElementById('settings-user-email');
-  if (snEl) snEl.textContent  = name  || 'Mon compte';
-  if (seEl) seEl.textContent  = email || '';
 }
 
 // ══════════════════════════════════════════════════════
@@ -2639,37 +2311,15 @@ function initWater() {
   if (S.waterDate !== today) { S.waterCl=0; S.waterDate=today; persist(); }
   renderWater();
 }
-function addWater(cl) {
-  S.waterCl = Math.max(0, S.waterCl + cl);
-  S.waterDate = todayStr();
-  persist();
-  // Sync water dans l'entrée du jour (US-12)
-  const e = getTodayEntry();
-  e.water_cl = S.waterCl;
-  upsert(S.daily, e, 'daily');
-  renderWater();
-}
-function resetWater() {
-  S.waterCl = 0;
-  S.waterDate = todayStr();
-  persist();
-  const e = getTodayEntry();
-  e.water_cl = 0;
-  upsert(S.daily, e, 'daily');
-  renderWater();
-}
+function addWater(cl)  { S.waterCl=Math.max(0,S.waterCl+cl); persist(); renderWater(); }
+function resetWater()  { S.waterCl=0; persist(); renderWater(); }
 function renderWater() {
   const pct = Math.min(100,(S.waterCl/CFG.hydraGoal)*100);
-  const wEl = document.getElementById('h-water');
-  const wBar = document.getElementById('h-water-bar');
-  const wStatus = document.getElementById('h-water-status');
-  if (wEl) wEl.textContent = S.waterCl;
-  if (wBar) {
-    wBar.style.width = pct+'%';
-    wBar.style.background = pct>=100 ? 'linear-gradient(90deg,var(--success),#a8f0d0)' : 'linear-gradient(90deg,var(--accent2),#a8d8f0)';
-  }
+  document.getElementById('h-water').textContent = S.waterCl;
+  document.getElementById('h-water-bar').style.width = pct+'%';
   const msgs = [[0,"Commence à boire 💦"],[30,"Continue ! 👍"],[60,"Bonne progression 💪"],[90,"Presque l'objectif ! 🔥"],[100,"Encore un peu 🌊"],[Infinity,"Objectif atteint ! 🎉"]];
-  if (wStatus) wStatus.textContent = msgs.find(([t])=>pct<=t)?.[1]||"Objectif atteint ! 🎉";
+  document.getElementById('h-water-status').textContent = msgs.find(([t])=>pct<=t)?.[1]||"Objectif atteint ! 🎉";
+  document.getElementById('h-water-bar').style.background = pct>=100 ? 'linear-gradient(90deg,var(--success),#a8f0d0)' : 'linear-gradient(90deg,var(--accent2),#a8d8f0)';
 }
 
 // ══════════════════════════════════════════════════════
@@ -2752,16 +2402,6 @@ function renderAll() {
   updateTodayRecap();
   updateUserAvatar();
   renderMealRecap();
-  renderWater();
-
-  // US-14 : afficher la date du jour sur l'accueil
-  const dateEl = document.getElementById('home-date');
-  if (dateEl) {
-    dateEl.textContent = new Date().toLocaleDateString('fr-FR', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    });
-  }
-
   const start = new Date(CFG.startDate+'T12:00:00');
   const diff  = Math.floor((Date.now()-start)/86400000);
   const week  = Math.min(13,Math.max(1,Math.floor(diff/7)+1));
@@ -2769,10 +2409,7 @@ function renderAll() {
   const wS = new Date(start.getTime()+(week-1)*7*86400000);
   const wE = new Date(wS.getTime()+6*86400000);
   const fmt = d=>d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
-  const wDatesEl = document.getElementById('home-week-dates');
-  if (wDatesEl) wDatesEl.textContent = `${fmt(wS)} – ${fmt(wE)}`;
-  const statsEl = document.getElementById('stats-week-label');
-  if (statsEl) statsEl.textContent = `Semaine ${week} · ${fmt(wS)} – ${fmt(wE)}`;
+  document.getElementById('stats-week-label').textContent = `Semaine ${week} · ${fmt(wS)} – ${fmt(wE)}`;
 }
 
 function renderHome() {
@@ -2817,12 +2454,6 @@ function renderLogs() {
   const allW = getAllWeights();
   const wMap = Object.fromEntries(allW.map((x,i)=>[x.d,i]));
   const fmtD = d=>{const[y,m,dd]=d.split('-');return`${dd}/${m}`;};
-
-  // Compteurs (US-06)
-  const dCount = document.getElementById('hist-daily-count');
-  const wCount = document.getElementById('hist-weekly-count');
-  if (dCount) dCount.textContent = `${S.daily.length} entrée(s)`;
-  if (wCount) wCount.textContent = `${S.weekly.length} bilan(s)`;
 
   // Daily log
   const td = document.getElementById('log-daily');
@@ -2904,14 +2535,6 @@ function renderCharts() {
 // ══════════════════════════════════════════════════════
 // TAB SWITCHES
 // ══════════════════════════════════════════════════════
-function switchStatsTab(tab) {
-  document.getElementById('stab-graphs').style.display  = tab === 'graphs'  ? 'block' : 'none';
-  document.getElementById('stab-history').style.display = tab === 'history' ? 'block' : 'none';
-  document.getElementById('stab-btn-graphs').classList.toggle('active',  tab === 'graphs');
-  document.getElementById('stab-btn-history').classList.toggle('active', tab === 'history');
-  if (tab === 'history') renderLogs();
-}
-
 function switchJournalTab(tab) {
   ['daily','weekly','photo'].forEach(t=>{document.getElementById(`jtab-${t}`).style.display=t===tab?'block':'none';});
   document.querySelectorAll('#page-journal .seg-btn').forEach((b,i)=>b.classList.toggle('active',['daily','weekly','photo'][i]===tab));
@@ -2926,65 +2549,53 @@ function switchRepasTab(tab) {
 }
 
 function switchMealTab(tab) {
-  ['dejeuner','diner','collation','weekend'].forEach(t => {
-    const el = document.getElementById(`meals-${t}`);
-    if (el) el.style.display = t === tab ? 'block' : 'none';
-  });
-  document.querySelectorAll('.mtab').forEach(b => {
-    // Dériver l'onglet actif depuis onclick
-    const match = b.getAttribute('onclick')?.match(/switchMealTab\('(\w+)'\)/);
-    if (match) b.classList.toggle('active', match[1] === tab);
-  });
+  ['dejeuner','diner','collation','weekend'].forEach(t=>{document.getElementById(`meals-${t}`).style.display=t===tab?'block':'none';});
+  document.querySelectorAll('.mtab').forEach((b,i)=>b.classList.toggle('active',['dejeuner','diner','collation','weekend'][i]===tab));
 }
 
 // ══════════════════════════════════════════════════════
 // API KEY
 // ══════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════
-// US-03 : APPEL PROXY SÉCURISÉ (clé côté serveur)
-// ══════════════════════════════════════════════════════
-async function callProxy(body) {
-  const session = await supa.auth.getSession();
-  const jwt = session?.data?.session?.access_token;
-  if (!jwt) throw new Error('Session expirée — reconnecte-toi');
+function getApiKey() { try{return localStorage.getItem('pdc_api_key')||'';}catch{return '';} }
 
-  const resp = await fetch('https://anthropic-proxy.filbert-nkiere.workers.dev', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${jwt}`,   // ← JWT Supabase, pas la clé Anthropic
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Erreur HTTP ${resp.status}`);
-  }
-  return resp.json();
+function saveApiKey() {
+  const v=document.getElementById('api-key-input').value.trim();
+  if(!v.startsWith('sk-ant')){toast('Clé invalide — doit commencer par sk-ant'); return;}
+  try{localStorage.setItem('pdc_api_key',v);}catch{toast('Erreur de sauvegarde');return;}
+  updateApiStatus(); toast('✓ Clé API sauvegardée !');
 }
 
-function getApiKey() { return true; } // Toujours actif — clé côté serveur
-
-function saveApiKey()  { toast('🔒 La clé est maintenant sécurisée côté serveur'); }
-function clearApiKey() { toast('🔒 La clé est gérée côté serveur — rien à effacer'); }
+function clearApiKey() {
+  if(!confirm('Effacer la clé API ?'))return;
+  localStorage.removeItem('pdc_api_key');
+  const akEl = document.getElementById('api-key-input'); if(akEl) akEl.value='';
+  updateApiStatus(); toast('Clé effacée.');
+}
 
 function updateApiStatus() {
-  const dot   = document.getElementById('api-dot');
-  const title = document.getElementById('api-status-title');
-  const sub   = document.getElementById('api-status-sub');
-  if (dot)   { dot.className = 'api-dot on'; }
-  if (title) title.textContent = 'Analyseur photo actif ✓';
-  if (sub)   sub.textContent   = '🔒 Clé sécurisée côté serveur';
+  const key=getApiKey();
+  const dot=document.getElementById('api-dot');
+  const title=document.getElementById('api-status-title');
+  const sub=document.getElementById('api-status-sub');
+  if(key){
+    dot.className='api-dot on';
+    title.textContent='Analyseur photo actif ✓';
+    sub.textContent=`Clé configurée · ...${key.slice(-6)}`;
+  } else {
+    dot.className='api-dot off';
+    title.textContent='Analyseur photo non configuré';
+    sub.textContent='Clé API Anthropic requise';
+  }
+  if(document.getElementById('api-key-input')&&key) document.getElementById('api-key-input').value=key;
   updatePhotoUI();
 }
 
 function updatePhotoUI() {
-  const noKey = document.getElementById('photo-no-key');
-  const ui    = document.getElementById('photo-ui');
-  if (noKey) noKey.style.display = 'none';
-  if (ui)    ui.style.display    = 'block';
+  const key=getApiKey();
+  const noKey=document.getElementById('photo-no-key');
+  const ui=document.getElementById('photo-ui');
+  if(noKey) noKey.style.display=key?'none':'block';
+  if(ui)    ui.style.display=key?'block':'none';
 }
 
 // ══════════════════════════════════════════════════════
@@ -2994,12 +2605,13 @@ let photoB64=null, photoMime=null, lastAnalysis=null;
 
 function handlePhoto(e) {
   const file=e.target.files[0]; if(!file)return;
-  photoMime='image/jpeg';
+  photoMime='image/jpeg'; // Always convert to JPEG for compression
   const r=new FileReader();
   r.onload=ev=>{
+    // Compress via canvas before sending
     const img=new Image();
     img.onload=()=>{
-      const MAX=1200;
+      const MAX=1200; // max dimension px
       let w=img.width, h=img.height;
       if(w>MAX||h>MAX){
         if(w>h){ h=Math.round(h*MAX/w); w=MAX; }
@@ -3007,8 +2619,9 @@ function handlePhoto(e) {
       }
       const canvas=document.createElement('canvas');
       canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const compressed=canvas.toDataURL('image/jpeg',0.75);
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.75); // 75% quality
       photoB64=compressed.split(',')[1];
       document.getElementById('photo-img').src=compressed;
       document.getElementById('upload-zone').style.display='none';
@@ -3029,22 +2642,38 @@ function resetPhoto() {
 }
 
 async function analysePhoto() {
-  if(!photoB64){ toast('Importe une photo'); return; }
+  const key=getApiKey();
+  if(!key){toast('Configure ta clé API dans Paramètres');return;}
+  if(!photoB64){toast('Importe une photo');return;}
   const btn=document.getElementById('btn-analyse');
   const lbl=document.getElementById('analyse-lbl');
   btn.disabled=true;
   lbl.innerHTML='<span class="spinner"></span> Analyse…';
   try {
-    const data = await callProxy({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:800,
-      messages:[{role:'user',content:[
-        {type:'image',source:{type:'base64',media_type:photoMime,data:photoB64}},
-        {type:'text',text:`Analyse ce repas et réponds UNIQUEMENT en JSON valide sans markdown:\n{"meal_name":"nom","portion":"portion","kcal":nombre,"proteines_g":nombre,"glucides_g":nombre,"lipides_g":nombre,"ingredients":["aliment 1","aliment 2"],"confidence":nombre,"note":"conseil"}`}
-      ]}]
+    const resp=await fetch('https://anthropic-proxy.filbert-nkiere.workers.dev',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:photoMime,data:photoB64}},
+          {type:'text',text:`Analyse ce repas et réponds UNIQUEMENT en JSON valide sans markdown:
+{"meal_name":"nom","portion":"portion","kcal":nombre,"proteines_g":nombre,"glucides_g":nombre,"lipides_g":nombre,"ingredients":["aliment 1","aliment 2"],"confidence":nombre,"note":"conseil"}`}
+        ]}]
+      })
     });
-    const content = data.content;
-    if(!content || !Array.isArray(content)) throw new Error('Réponse inattendue du serveur');
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      throw new Error(err.error?.message||`Erreur HTTP ${resp.status}`);
+    }
+    const data=await resp.json();
+    // Handle both direct Anthropic response and wrapped response
+    const content = data.content || data?.data?.content || data?.choices;
+    if(!content || !Array.isArray(content)){
+      console.error('Unexpected response:', JSON.stringify(data).slice(0,300));
+      throw new Error('Réponse inattendue du serveur');
+    }
     const text=content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
     if(!text) throw new Error('Réponse vide');
     showPhotoResult(JSON.parse(text));
@@ -3161,21 +2790,28 @@ let authMode       = 'login';
 
 // ── AUTH INIT ──────────────────────────────────────────
 async function initAuth() {
-  showSkeletons(true);
-  // Handle OAuth redirect
+  // Handle OAuth redirect — Supabase returns tokens in URL hash
   const hash = window.location.hash;
   if (hash && hash.includes('access_token')) {
+    // Let Supabase parse the hash and establish the session
     const { data, error } = await supa.auth.getSession();
+    // Clean URL
     window.history.replaceState(null, '', window.location.pathname);
-    if (data?.session?.user) { await onUserLoggedIn(data.session.user); return; }
+    if (data?.session?.user) {
+      await onUserLoggedIn(data.session.user);
+      return;
+    }
   }
+
+  // Normal session check
   const { data: { session } } = await supa.auth.getSession();
   if (session?.user) {
     await onUserLoggedIn(session.user);
   } else {
-    showSkeletons(false);
     showAuthScreen();
   }
+
+  // Listen for auth changes (handles popup-based OAuth too)
   supa.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
       await onUserLoggedIn(session.user);
@@ -3185,54 +2821,16 @@ async function initAuth() {
   });
 }
 
-function showSkeletons(show) {
-  // Affiche/masque les skeletons sur l'accueil pendant le chargement
-  const ids = ['h-current','h-lost','h-remaining','h-water','h-sleep','h-cal-eaten'];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (show) {
-      el.dataset.realText = el.textContent;
-      el.innerHTML = '<span class="skeleton sk-big" style="display:inline-block;min-width:60px;height:28px">&nbsp;</span>';
-    } else {
-      if (el.dataset.realText !== undefined) el.textContent = el.dataset.realText;
-    }
-  });
-}
-
-async function retryLoadData() {
-  const banner = document.getElementById('net-error-banner');
-  if (banner) banner.style.display = 'none';
-  showSkeletons(true);
-  try {
-    await loadUserData();
-    renderAll();
-  } catch(e) {
-    showSkeletons(false);
-    if (banner) banner.style.display = 'flex';
-  }
-}
-
 async function onUserLoggedIn(user) {
   currentUser = user;
   const { data: profile } = await supa.from('profiles').select('*').eq('id', user.id).single();
   if (!profile || !profile.start_weight) {
-    showSkeletons(false);
     showOnboarding(user);
   } else {
     currentProfile = profile;
     applyProfile(profile);
     hideAuthScreens();
-    try {
-      await loadUserData();
-      const banner = document.getElementById('net-error-banner');
-      if (banner) banner.style.display = 'none';
-    } catch(e) {
-      const banner = document.getElementById('net-error-banner');
-      if (banner) banner.style.display = 'flex';
-    } finally {
-      showSkeletons(false);
-    }
+    await loadUserData();
     renderAll();
   }
 }
@@ -3245,9 +2843,8 @@ function applyProfile(p) {
   CFG.startChest  = p.start_chest   || 110;
   CFG.calBase     = p.cal_base      || 2200;
   CFG.startDate   = p.start_date    || new Date().toISOString().split('T')[0];
-  // US-10 : mettre à jour les onglets repas selon le protocole
-  if (document.getElementById('meal-tabs-bar')) renderMealTabs();
-  if (document.getElementById('ai-meal-context')) updateAiMealContext();
+  // Update home greeting
+  // home greeting handled by updateUserAvatar
 }
 
 function showAuthScreen() {
@@ -3366,21 +2963,18 @@ function calcObCal() {
   const age    = parseInt(document.getElementById('ob-age')?.value) || 30;
   const height = parseInt(document.getElementById('ob-height')?.value) || 175;
   const activ  = parseFloat(document.getElementById('ob-activity')?.value) || 1.4;
-  const sex    = document.getElementById('ob-sex')?.value || 'male';
-  obData.sex   = sex;
-  // Mifflin-St Jeor : Homme +5, Femme -161
-  const constant = sex === 'female' ? -161 : 5;
-  const mb     = 10 * weight + 6.25 * height - 5 * age + constant;
+  // Mifflin-St Jeor (male)
+  const mb     = 10 * weight + 6.25 * height - 5 * age + 5;
   const tdee   = Math.round(mb * activ);
   const deficit= 700;
-  const target = Math.max(1200, tdee - deficit); // plancher de sécurité
+  const target = tdee - deficit;
   obData.cal_base = target;
   const resEl = document.getElementById('ob-cal-result');
   const valEl = document.getElementById('ob-cal-value');
   const detEl = document.getElementById('ob-cal-detail');
   if (resEl) resEl.style.display = 'block';
   if (valEl) valEl.textContent = target.toLocaleString('fr-FR');
-  if (detEl) detEl.textContent = `kcal/j · TDEE ${tdee.toLocaleString('fr-FR')} kcal · déficit ${deficit} kcal`;
+  if (detEl) detEl.textContent = `kcal/j · TDEE ${tdee} kcal · déficit ${deficit} kcal`;
 }
 
 async function obFinish() {
@@ -3408,7 +3002,6 @@ async function obFinish() {
     start_waist:  obData.start_waist  || null,
     start_chest:  obData.start_chest  || null,
     cal_base:     obData.cal_base     || 2000,
-    sex:          obData.sex          || 'male',
     hydra_goal:   250,
     start_date:   today,
     protocol:     protocol,
@@ -3447,31 +3040,15 @@ async function loadUserData() {
     supa.from('favorites').select('*').eq('user_id', uid).order('created_at'),
   ]);
 
-  if (dailyRes.error)  throw new Error(dailyRes.error.message);
-  if (weeklyRes.error) throw new Error(weeklyRes.error.message);
-
   if (dailyRes.data)  S.daily  = dailyRes.data.map(dbToDaily);
   if (weeklyRes.data) S.weekly = weeklyRes.data.map(dbToWeekly);
   if (favsRes.data)   S_FAVS   = favsRes.data.map(dbToFav);
-
-  // US-12 : restaurer l'hydratation du jour depuis la base
-  const today = todayStr();
-  const todayEntry = S.daily.find(e => e.date === today);
-  if (todayEntry?.water_cl != null) {
-    S.waterCl   = todayEntry.water_cl;
-    S.waterDate = today;
-  } else {
-    // reset si changement de jour
-    if (S.waterDate !== today) { S.waterCl = 0; S.waterDate = today; }
-  }
 }
 
 function dbToDaily(r) {
   return {
     date: r.date, weight: r.weight, cal: r.cal,
     sleep: r.sleep, sleepQ: r.sleep_q, note: r.note, target: r.target,
-    meals: r.meals || [],
-    water_cl: r.water_cl || null,   // ← US-12
     course: r.course, kb: r.kb, futsal: r.futsal,
     corde: r.corde, corde_dur: r.corde_dur,
     velo: r.velo, velo_dur: r.velo_dur,
@@ -3498,8 +3075,6 @@ async function syncDaily(entry) {
     weight: entry.weight||null, cal: entry.cal||null,
     sleep: entry.sleep||null, sleep_q: entry.sleepQ||null,
     note: entry.note||null, target: entry.target||null,
-    meals: entry.meals || [],          // ← US-01 : persistance des repas détaillés
-    water_cl: entry.water_cl||null,    // ← US-12 : persistance de l'hydratation
     course: !!entry.course, kb: !!entry.kb, futsal: !!entry.futsal,
     corde: !!entry.corde, corde_dur: entry.corde_dur||null,
     velo: !!entry.velo, velo_dur: entry.velo_dur||null,
