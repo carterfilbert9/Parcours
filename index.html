@@ -1012,20 +1012,9 @@ canvas { width: 100% !important; }
         </div>
       </details>
 
-      <!-- LOG -->
-      <div class="card-label" style="margin:1rem 0 .5rem">Historique</div>
-      <div class="card" style="padding:.8rem">
-        <div class="log-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th><th>Poids</th><th>Δ</th><th>Séances</th>
-                <th>Cal.</th><th>Cible</th><th>Sommeil</th><th>Note</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="log-daily"></tbody>
-          </table>
-        </div>
+      <!-- LOG déplacé dans Stats → Historique (US-06) -->
+      <div style="font-size:.75rem;color:var(--muted);text-align:center;padding:.6rem;background:var(--card2);border-radius:var(--r-sm)">
+        📊 L'historique complet est disponible dans <button onclick="goTab('stats');switchStatsTab('history')" style="background:none;border:none;color:var(--accent);font-size:.75rem;cursor:pointer;font-weight:600;padding:0">Stats → 🗂 Historique</button>
       </div>
     </div>
 
@@ -1059,25 +1048,14 @@ canvas { width: 100% !important; }
         <button class="btn btn-primary" onclick="addWeeklyEntry()">Enregistrer le bilan semaine</button>
       </div>
 
-      <div class="card-label" style="margin:1rem 0 .5rem">Historique hebdo</div>
-      <div class="card" style="padding:.8rem">
-        <div class="log-scroll">
-          <table>
-            <thead><tr><th>Date</th><th>Poids</th><th>Δ</th><th>Taille</th><th>Poitrine</th><th>Note</th><th></th></tr></thead>
-            <tbody id="log-weekly"></tbody>
-          </table>
-        </div>
+      <!-- Historique hebdo déplacé dans Stats (US-06) -->
+      <div style="font-size:.75rem;color:var(--muted);text-align:center;padding:.6rem;background:var(--card2);border-radius:var(--r-sm);margin-top:.9rem">
+        📊 L'historique hebdo est disponible dans <button onclick="goTab('stats');switchStatsTab('history')" style="background:none;border:none;color:var(--accent);font-size:.75rem;cursor:pointer;font-weight:600;padding:0">Stats → 🗂 Historique</button>
       </div>
     </div>
 
     <!-- PHOTO TAB -->
     <div id="jtab-photo" style="display:none">
-      <div id="photo-no-key" style="display:none" class="card">
-        <div style="text-align:center;padding:1rem;color:var(--muted);font-size:.85rem">
-          📷 Configure ta clé API dans <strong>Paramètres</strong> pour activer l'analyse photo.
-          <button class="btn btn-secondary btn-sm" style="margin-top:.8rem;display:block;width:100%" onclick="goTab('settings')">⚙️ Aller aux Paramètres</button>
-        </div>
-      </div>
       <div id="photo-ui">
         <div class="card">
           <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()">
@@ -1135,26 +1113,71 @@ canvas { width: 100% !important; }
       </div>
     </div>
 
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">⚖️ Évolution du poids</div>
-      <canvas id="chart-weight" height="180"></canvas>
+    <!-- Onglets Stats / Historique (US-06) -->
+    <div class="seg-ctrl" style="margin-bottom:1rem">
+      <button class="seg-btn active" id="stab-btn-graphs" onclick="switchStatsTab('graphs')" aria-label="Voir les graphiques">📈 Graphiques</button>
+      <button class="seg-btn" id="stab-btn-history" onclick="switchStatsTab('history')" aria-label="Voir l'historique">🗂 Historique</button>
     </div>
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">🔥 Calories consommées</div>
-      <canvas id="chart-cal" height="180"></canvas>
-      <div style="font-size:.68rem;color:var(--muted);margin-top:.4rem">
-        <span style="color:var(--success)">■</span> Dans la cible &nbsp;
-        <span style="color:var(--accent2)">■</span> Repos &nbsp;
-        <span style="color:var(--danger)">■</span> Dépassement
+
+    <!-- TAB GRAPHIQUES -->
+    <div id="stab-graphs">
+      <div class="card">
+        <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">⚖️ Évolution du poids</div>
+        <canvas id="chart-weight" height="180"></canvas>
+      </div>
+      <div class="card">
+        <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem">🔥 Calories consommées</div>
+        <canvas id="chart-cal" height="180"></canvas>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:.4rem">
+          <span style="color:var(--success)">■</span> Dans la cible &nbsp;
+          <span style="color:var(--accent2)">■</span> Repos &nbsp;
+          <span style="color:var(--danger)">■</span> Dépassement
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">📏 Mensurations (cm)</div>
+        <canvas id="chart-mensur" height="180"></canvas>
+      </div>
+      <div class="card">
+        <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">😴 Sommeil (heures)</div>
+        <canvas id="chart-sleep" height="160"></canvas>
       </div>
     </div>
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">📏 Mensurations (cm)</div>
-      <canvas id="chart-mensur" height="180"></canvas>
-    </div>
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;margin-bottom:.8rem">😴 Sommeil (heures)</div>
-      <canvas id="chart-sleep" height="160"></canvas>
+
+    <!-- TAB HISTORIQUE (US-06) -->
+    <div id="stab-history" style="display:none">
+      <!-- Historique quotidien -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <div class="card-label" style="margin:0">📆 Entrées quotidiennes</div>
+        <span style="font-size:.72rem;color:var(--muted)" id="hist-daily-count"></span>
+      </div>
+      <div class="card" style="padding:.8rem;margin-bottom:1rem">
+        <div class="log-scroll">
+          <table role="table" aria-label="Historique quotidien">
+            <thead>
+              <tr>
+                <th>Date</th><th>Poids</th><th>Δ</th><th>Séances</th>
+                <th>Cal.</th><th>Cible</th><th>Sommeil</th><th>Note</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="log-daily"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Historique hebdomadaire -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <div class="card-label" style="margin:0">📅 Bilans hebdomadaires</div>
+        <span style="font-size:.72rem;color:var(--muted)" id="hist-weekly-count"></span>
+      </div>
+      <div class="card" style="padding:.8rem">
+        <div class="log-scroll">
+          <table role="table" aria-label="Historique hebdomadaire">
+            <thead><tr><th>Date</th><th>Poids</th><th>Δ</th><th>Taille</th><th>Poitrine</th><th>Note</th><th></th></tr></thead>
+            <tbody id="log-weekly"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1173,16 +1196,36 @@ canvas { width: 100% !important; }
     </div>
 
     <div id="rtab-suggestions">
-      <div class="meal-tabs" id="meal-tabs-bar">
-        <button class="mtab active" onclick="switchMealTab('dejeuner')">☀️ Déjeuner</button>
-        <button class="mtab" onclick="switchMealTab('diner')">🌙 Dîner</button>
-        <button class="mtab" onclick="switchMealTab('collation')">🍎 Collation</button>
-        <button class="mtab" onclick="switchMealTab('weekend')">🥐 Week-end</button>
+      <!-- Bouton génération IA (US-10) -->
+      <div class="card" style="margin-bottom:.9rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem">
+          <div>
+            <div style="font-size:.88rem;font-weight:600">✨ Suggestions personnalisées</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:.15rem" id="ai-meal-context">Chargement du profil…</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-generate-meals" onclick="generateMealSuggestions()" aria-label="Générer des suggestions de repas personnalisées">
+            <span id="generate-lbl">🤖 Générer mes repas</span>
+          </button>
+        </div>
+        <div id="ai-meal-result" style="display:none"></div>
       </div>
-      <div id="meals-dejeuner"></div>
-      <div id="meals-diner"     style="display:none"></div>
-      <div id="meals-collation" style="display:none"></div>
-      <div id="meals-weekend"   style="display:none"></div>
+
+      <!-- Suggestions statiques en fallback -->
+      <div id="static-meals-section">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;padding:.35rem .6rem;background:var(--card2);border-radius:var(--r-sm)">
+          📚 Recettes de base — ou génère des suggestions adaptées à ton profil ci-dessus
+        </div>
+        <div class="meal-tabs" id="meal-tabs-bar">
+          <button class="mtab active" onclick="switchMealTab('dejeuner')">☀️ Déjeuner</button>
+          <button class="mtab" onclick="switchMealTab('diner')">🌙 Dîner</button>
+          <button class="mtab" onclick="switchMealTab('collation')">🍎 Collation</button>
+          <button class="mtab" onclick="switchMealTab('weekend')">🥐 Week-end</button>
+        </div>
+        <div id="meals-dejeuner"></div>
+        <div id="meals-diner"     style="display:none"></div>
+        <div id="meals-collation" style="display:none"></div>
+        <div id="meals-weekend"   style="display:none"></div>
+      </div>
     </div>
 
     <div id="rtab-courses" style="display:none" id="shop-container"></div>
@@ -1197,23 +1240,19 @@ canvas { width: 100% !important; }
       </div>
     </div>
 
-    <!-- API KEY -->
+    <!-- STATUT ANALYSEUR PHOTO (US-03 : clé côté serveur) -->
     <div class="card">
-      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem">
-        <div class="api-dot off" id="api-dot" aria-hidden="true"></div>
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div class="api-dot" id="api-dot" aria-hidden="true"></div>
         <div>
-          <div style="font-size:.9rem;font-weight:600" id="api-status-title">Analyseur photo non configuré</div>
-          <div style="font-size:.72rem;color:var(--muted)" id="api-status-sub">Clé API Anthropic requise</div>
+          <div style="font-size:.9rem;font-weight:600" id="api-status-title">Analyseur photo</div>
+          <div style="font-size:.72rem;color:var(--muted)" id="api-status-sub">Vérifie la connexion…</div>
         </div>
       </div>
-      <div class="api-key-row">
-        <input type="password" class="api-key-input" id="api-key-input" placeholder="sk-ant-api03-..." aria-label="Entrer ta clé API Anthropic" autocomplete="off">
-        <button class="btn btn-secondary btn-sm" onclick="saveApiKey()" aria-label="Sauvegarder la clé API">Sauvegarder</button>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.8rem;background:var(--card2);border-radius:var(--r-sm);padding:.6rem .8rem;line-height:1.6">
+        🔒 La clé API est sécurisée côté serveur.<br>
+        Aucune configuration requise de ta part.
       </div>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem">
-        Clé stockée uniquement sur cet appareil. Obtiens la tienne sur <span style="color:var(--accent4)">console.anthropic.com</span>
-      </div>
-      <button class="btn btn-danger btn-sm" style="margin-top:.7rem" onclick="clearApiKey()" aria-label="Effacer la clé API">Effacer la clé</button>
     </div>
 
     <!-- LOGOUT -->
@@ -1537,8 +1576,14 @@ function goTab(tab) {
   const navEl = document.getElementById(`nav-${tab}`);
   if (navEl) navEl.classList.add('active');
   currentTab = tab;
-  if (tab === 'stats')    renderCharts();
-  if (tab === 'repas')    renderShop();
+  if (tab === 'stats') {
+    renderCharts();
+    renderLogs(); // pré-charger l'historique en arrière-plan
+  }
+  if (tab === 'repas') {
+    renderShop();
+    updateAiMealContext();
+  }
   if (tab === 'settings') renderCalSettings();
 }
 
@@ -2346,7 +2391,113 @@ function deleteFav(id) {
 
 
 // ══════════════════════════════════════════════════════
-// SETTINGS — OBJECTIFS CALORIQUES DYNAMIQUES (US-08)
+// US-10 : SUGGESTIONS REPAS IA DYNAMIQUES
+// ══════════════════════════════════════════════════════
+function updateAiMealContext() {
+  const el = document.getElementById('ai-meal-context');
+  if (!el || !currentProfile) return;
+  const proto = { standard:'3 repas/jour', ji16:'Jeûne 16/8', ji18:'Jeûne 18/6', omad:'OMAD' }[currentProfile.protocol] || '';
+  const goal  = { loss:'Perte de poids 🎯', maintain:'Maintien ⚖️', muscle:'Prise de muscle 💪', sport:'Performance 🏆' }[currentProfile.goal_type] || '';
+  const cal   = CFG.calBase;
+  el.textContent = `${goal} · ${proto} · ${cal} kcal/j`;
+}
+
+async function generateMealSuggestions() {
+  if (!currentProfile) { toast('Profil non chargé'); return; }
+
+  const btn = document.getElementById('btn-generate-meals');
+  const lbl = document.getElementById('generate-lbl');
+  const result = document.getElementById('ai-meal-result');
+  btn.disabled = true;
+  lbl.innerHTML = '<span class="spinner"></span> Génération…';
+  result.style.display = 'none';
+
+  // Construire le contexte utilisateur
+  const proto    = { standard:'3 repas par jour', ji16:'jeûne intermittent 16/8 (fenêtre 12h-20h)', ji18:'jeûne intermittent 18/6', omad:'OMAD (1 seul repas par jour)' }[currentProfile.protocol] || '3 repas par jour';
+  const goal     = { loss:'perte de poids', maintain:'maintien du poids', muscle:'prise de muscle', sport:'performance sportive' }[currentProfile.goal_type] || 'perte de poids';
+  const calBase  = CFG.calBase;
+  const name     = currentProfile.name || 'l\'utilisateur';
+  // Récupérer les repas déjà mangés aujourd'hui pour éviter les répétitions
+  const today    = todayStr();
+  const todayEntry = S.daily.find(e => e.date === today);
+  const alreadyEaten = (todayEntry?.meals || []).map(m => m.name).join(', ') || 'aucun pour l\'instant';
+  const calLeft  = calBase - (todayEntry?.cal || 0);
+
+  const prompt = `Tu es un nutritionniste expert. Génère exactement 3 suggestions de repas personnalisées pour ${name}.
+
+PROFIL :
+- Objectif : ${goal}
+- Protocole alimentaire : ${proto}
+- Cible calorique journalière : ${calBase} kcal
+- Calories restantes aujourd'hui : ${calLeft} kcal
+- Déjà mangé aujourd'hui : ${alreadyEaten}
+
+CONTRAINTES :
+- Adapte les portions et les recettes à l'objectif (${goal})
+- Respecte le protocole ${proto}
+- Propose des repas simples, rapides (<20 min), avec des ingrédients courants
+- Varie les sources de protéines
+- Pour la perte de poids : privilégie protéines et légumes, limite les glucides raffinés
+- Pour la prise de muscle : augmente les protéines et les glucides complexes
+- Pour le maintien : équilibre macro-nutriments
+- Pour la performance : glucides complexes avant effort, protéines après
+
+Réponds UNIQUEMENT en JSON valide, sans markdown, sans commentaire :
+[
+  {
+    "moment": "Déjeuner|Dîner|Collation|Petit-déj",
+    "name": "Nom du repas",
+    "time": "X min",
+    "kcal": nombre,
+    "proteines": "Xg",
+    "ingredients": "ingrédient 1 · ingrédient 2 · ingrédient 3",
+    "tip": "conseil pratique court"
+  }
+]`;
+
+  try {
+    const data = await callProxy({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1200,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    const text = (data.content || []).map(c => c.text || '').join('').replace(/```json|```/g, '').trim();
+    const meals = JSON.parse(text);
+    renderAiMeals(meals);
+  } catch(err) {
+    result.style.display = 'block';
+    result.innerHTML = `<div style="font-size:.82rem;color:var(--danger)">⚠️ ${err.message}</div>`;
+    toast('Erreur de génération');
+  } finally {
+    btn.disabled = false;
+    lbl.textContent = '🤖 Régénérer';
+  }
+}
+
+function renderAiMeals(meals) {
+  const result = document.getElementById('ai-meal-result');
+  result.style.display = 'block';
+  result.innerHTML = meals.map(m => `
+    <div class="meal-card" style="border-color:rgba(167,139,250,0.25);margin-bottom:.8rem">
+      <div class="meal-head">
+        <div>
+          <div style="font-size:.65rem;color:var(--accent4);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">✨ ${m.moment}</div>
+          <div class="meal-name">${m.name}</div>
+        </div>
+        <div class="meal-badge">⏱ ${m.time}</div>
+      </div>
+      <div class="meal-macros">
+        <span class="mpill mp-kcal">${m.kcal} kcal</span>
+        <span class="mpill mp-prot">${m.proteines} prot</span>
+      </div>
+      <div class="meal-ing">${m.ingredients}</div>
+      <div class="meal-tip">💡 ${m.tip}</div>
+      <button class="btn-meal-add" onclick="addMealToLog(${m.kcal},'${m.name.replace(/'/g,"\\'")}','${m.moment}')"
+        aria-label="Ajouter ${m.name} au journal (${m.kcal} kcal)">
+        ＋ Ajouter au journal (${m.kcal} kcal)
+      </button>
+    </div>`).join('');
+}
 // ══════════════════════════════════════════════════════
 function renderCalSettings() {
   const base = CFG.calBase;
@@ -2667,6 +2818,12 @@ function renderLogs() {
   const wMap = Object.fromEntries(allW.map((x,i)=>[x.d,i]));
   const fmtD = d=>{const[y,m,dd]=d.split('-');return`${dd}/${m}`;};
 
+  // Compteurs (US-06)
+  const dCount = document.getElementById('hist-daily-count');
+  const wCount = document.getElementById('hist-weekly-count');
+  if (dCount) dCount.textContent = `${S.daily.length} entrée(s)`;
+  if (wCount) wCount.textContent = `${S.weekly.length} bilan(s)`;
+
   // Daily log
   const td = document.getElementById('log-daily');
   if (!S.daily.length) { td.innerHTML=`<tr><td colspan="9" class="empty">Aucune entrée quotidienne.</td></tr>`; }
@@ -2747,6 +2904,14 @@ function renderCharts() {
 // ══════════════════════════════════════════════════════
 // TAB SWITCHES
 // ══════════════════════════════════════════════════════
+function switchStatsTab(tab) {
+  document.getElementById('stab-graphs').style.display  = tab === 'graphs'  ? 'block' : 'none';
+  document.getElementById('stab-history').style.display = tab === 'history' ? 'block' : 'none';
+  document.getElementById('stab-btn-graphs').classList.toggle('active',  tab === 'graphs');
+  document.getElementById('stab-btn-history').classList.toggle('active', tab === 'history');
+  if (tab === 'history') renderLogs();
+}
+
 function switchJournalTab(tab) {
   ['daily','weekly','photo'].forEach(t=>{document.getElementById(`jtab-${t}`).style.display=t===tab?'block':'none';});
   document.querySelectorAll('#page-journal .seg-btn').forEach((b,i)=>b.classList.toggle('active',['daily','weekly','photo'][i]===tab));
@@ -2775,46 +2940,51 @@ function switchMealTab(tab) {
 // ══════════════════════════════════════════════════════
 // API KEY
 // ══════════════════════════════════════════════════════
-function getApiKey() { try{return localStorage.getItem('pdc_api_key')||'';}catch{return '';} }
+// ══════════════════════════════════════════════════════
+// US-03 : APPEL PROXY SÉCURISÉ (clé côté serveur)
+// ══════════════════════════════════════════════════════
+async function callProxy(body) {
+  const session = await supa.auth.getSession();
+  const jwt = session?.data?.session?.access_token;
+  if (!jwt) throw new Error('Session expirée — reconnecte-toi');
 
-function saveApiKey() {
-  const v=document.getElementById('api-key-input').value.trim();
-  if(!v.startsWith('sk-ant')){toast('Clé invalide — doit commencer par sk-ant'); return;}
-  try{localStorage.setItem('pdc_api_key',v);}catch{toast('Erreur de sauvegarde');return;}
-  updateApiStatus(); toast('✓ Clé API sauvegardée !');
+  const resp = await fetch('https://anthropic-proxy.filbert-nkiere.workers.dev', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${jwt}`,   // ← JWT Supabase, pas la clé Anthropic
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Erreur HTTP ${resp.status}`);
+  }
+  return resp.json();
 }
 
-function clearApiKey() {
-  if(!confirm('Effacer la clé API ?'))return;
-  localStorage.removeItem('pdc_api_key');
-  const akEl = document.getElementById('api-key-input'); if(akEl) akEl.value='';
-  updateApiStatus(); toast('Clé effacée.');
-}
+function getApiKey() { return true; } // Toujours actif — clé côté serveur
+
+function saveApiKey()  { toast('🔒 La clé est maintenant sécurisée côté serveur'); }
+function clearApiKey() { toast('🔒 La clé est gérée côté serveur — rien à effacer'); }
 
 function updateApiStatus() {
-  const key=getApiKey();
-  const dot=document.getElementById('api-dot');
-  const title=document.getElementById('api-status-title');
-  const sub=document.getElementById('api-status-sub');
-  if(key){
-    dot.className='api-dot on';
-    title.textContent='Analyseur photo actif ✓';
-    sub.textContent=`Clé configurée · ...${key.slice(-6)}`;
-  } else {
-    dot.className='api-dot off';
-    title.textContent='Analyseur photo non configuré';
-    sub.textContent='Clé API Anthropic requise';
-  }
-  if(document.getElementById('api-key-input')&&key) document.getElementById('api-key-input').value=key;
+  const dot   = document.getElementById('api-dot');
+  const title = document.getElementById('api-status-title');
+  const sub   = document.getElementById('api-status-sub');
+  if (dot)   { dot.className = 'api-dot on'; }
+  if (title) title.textContent = 'Analyseur photo actif ✓';
+  if (sub)   sub.textContent   = '🔒 Clé sécurisée côté serveur';
   updatePhotoUI();
 }
 
 function updatePhotoUI() {
-  const key=getApiKey();
-  const noKey=document.getElementById('photo-no-key');
-  const ui=document.getElementById('photo-ui');
-  if(noKey) noKey.style.display=key?'none':'block';
-  if(ui)    ui.style.display=key?'block':'none';
+  const noKey = document.getElementById('photo-no-key');
+  const ui    = document.getElementById('photo-ui');
+  if (noKey) noKey.style.display = 'none';
+  if (ui)    ui.style.display    = 'block';
 }
 
 // ══════════════════════════════════════════════════════
@@ -2824,13 +2994,12 @@ let photoB64=null, photoMime=null, lastAnalysis=null;
 
 function handlePhoto(e) {
   const file=e.target.files[0]; if(!file)return;
-  photoMime='image/jpeg'; // Always convert to JPEG for compression
+  photoMime='image/jpeg';
   const r=new FileReader();
   r.onload=ev=>{
-    // Compress via canvas before sending
     const img=new Image();
     img.onload=()=>{
-      const MAX=1200; // max dimension px
+      const MAX=1200;
       let w=img.width, h=img.height;
       if(w>MAX||h>MAX){
         if(w>h){ h=Math.round(h*MAX/w); w=MAX; }
@@ -2838,9 +3007,8 @@ function handlePhoto(e) {
       }
       const canvas=document.createElement('canvas');
       canvas.width=w; canvas.height=h;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,w,h);
-      const compressed=canvas.toDataURL('image/jpeg',0.75); // 75% quality
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.75);
       photoB64=compressed.split(',')[1];
       document.getElementById('photo-img').src=compressed;
       document.getElementById('upload-zone').style.display='none';
@@ -2861,38 +3029,22 @@ function resetPhoto() {
 }
 
 async function analysePhoto() {
-  const key=getApiKey();
-  if(!key){toast('Configure ta clé API dans Paramètres');return;}
-  if(!photoB64){toast('Importe une photo');return;}
+  if(!photoB64){ toast('Importe une photo'); return; }
   const btn=document.getElementById('btn-analyse');
   const lbl=document.getElementById('analyse-lbl');
   btn.disabled=true;
   lbl.innerHTML='<span class="spinner"></span> Analyse…';
   try {
-    const resp=await fetch('https://anthropic-proxy.filbert-nkiere.workers.dev',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:800,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:photoMime,data:photoB64}},
-          {type:'text',text:`Analyse ce repas et réponds UNIQUEMENT en JSON valide sans markdown:
-{"meal_name":"nom","portion":"portion","kcal":nombre,"proteines_g":nombre,"glucides_g":nombre,"lipides_g":nombre,"ingredients":["aliment 1","aliment 2"],"confidence":nombre,"note":"conseil"}`}
-        ]}]
-      })
+    const data = await callProxy({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:800,
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:photoMime,data:photoB64}},
+        {type:'text',text:`Analyse ce repas et réponds UNIQUEMENT en JSON valide sans markdown:\n{"meal_name":"nom","portion":"portion","kcal":nombre,"proteines_g":nombre,"glucides_g":nombre,"lipides_g":nombre,"ingredients":["aliment 1","aliment 2"],"confidence":nombre,"note":"conseil"}`}
+      ]}]
     });
-    if(!resp.ok){
-      const err=await resp.json().catch(()=>({}));
-      throw new Error(err.error?.message||`Erreur HTTP ${resp.status}`);
-    }
-    const data=await resp.json();
-    // Handle both direct Anthropic response and wrapped response
-    const content = data.content || data?.data?.content || data?.choices;
-    if(!content || !Array.isArray(content)){
-      console.error('Unexpected response:', JSON.stringify(data).slice(0,300));
-      throw new Error('Réponse inattendue du serveur');
-    }
+    const content = data.content;
+    if(!content || !Array.isArray(content)) throw new Error('Réponse inattendue du serveur');
     const text=content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
     if(!text) throw new Error('Réponse vide');
     showPhotoResult(JSON.parse(text));
@@ -3095,6 +3247,7 @@ function applyProfile(p) {
   CFG.startDate   = p.start_date    || new Date().toISOString().split('T')[0];
   // US-10 : mettre à jour les onglets repas selon le protocole
   if (document.getElementById('meal-tabs-bar')) renderMealTabs();
+  if (document.getElementById('ai-meal-context')) updateAiMealContext();
 }
 
 function showAuthScreen() {
