@@ -1278,7 +1278,7 @@ canvas { width: 100% !important; }
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-size:1rem;font-weight:700" id="settings-user-name">Utilisateur</div>
-          <div style="font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="settings-user-email">user@email.com</div>
+          <div style="font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="settings-user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="423731273002272f232b2e6c212d2f">[email&#160;protected]</a></div>
         </div>
       </div>
     </div>
@@ -1542,7 +1542,7 @@ canvas { width: 100% !important; }
 
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 'use strict';
 
@@ -2807,7 +2807,7 @@ function switchMealTab(tab) {
 function getApiKey() { try{return localStorage.getItem('pdc_api_key')||'';}catch{return '';} }
 
 function saveApiKey() {
-  const v=document.getElementById('api-key-input').value.trim();
+  const inp2=document.getElementById('api-key-input'); const v=inp2?inp2.value.trim():'';
   if(!v.startsWith('sk-ant')){toast('Clé invalide — doit commencer par sk-ant'); return;}
   try{localStorage.setItem('pdc_api_key',v);}catch{toast('Erreur de sauvegarde');return;}
   updateApiStatus(); toast('✓ Clé API sauvegardée !');
@@ -2821,20 +2821,12 @@ function clearApiKey() {
 }
 
 function updateApiStatus() {
-  const key=getApiKey();
-  const dot=document.getElementById('api-dot');
-  const title=document.getElementById('api-status-title');
-  const sub=document.getElementById('api-status-sub');
-  if(key){
-    dot.className='api-dot on';
-    title.textContent='Analyseur photo actif ✓';
-    sub.textContent=`Clé configurée · ...${key.slice(-6)}`;
-  } else {
-    dot.className='api-dot off';
-    title.textContent='Analyseur photo non configuré';
-    sub.textContent='Clé API Anthropic requise';
-  }
-  if(document.getElementById('api-key-input')&&key) document.getElementById('api-key-input').value=key;
+  const key = getApiKey();
+  const dot = document.getElementById('api-dot');
+  if (dot) dot.className = key ? 'api-dot on' : 'api-dot off';
+  // title/sub elements removed in new settings design — skip silently
+  const inp = document.getElementById('api-key-input');
+  if (inp && key) inp.value = key;
   updatePhotoUI();
 }
 
@@ -3358,17 +3350,4 @@ async function syncFav(fav, action) {
 async function deleteEntryRemote(type, date) {
   if (!currentUser) return;
   const table = type === 'daily' ? 'daily_entries' : 'weekly_entries';
-  await supa.from(table).delete().eq('user_id', currentUser.id).eq('date', date);
-}
-
-// Logout
-async function logout() {
-  await supa.auth.signOut();
-  currentUser = null; currentProfile = null;
-  S.daily = []; S.weekly = []; S_FAVS = [];
-  showAuthScreen();
-}
-
-</script>
-</body>
-</html>
+  await supa.from(table).delete().eq('user_id', currentUser.id)
