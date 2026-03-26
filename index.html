@@ -1764,34 +1764,42 @@ function searchFood(query){
 
 async function searchOpenFoodFacts(query, qty){
   const res=document.getElementById('food-results');
+  // Manual timeout using AbortController (compatible Safari)
+  const controller=new AbortController();
+  const timer=setTimeout(function(){controller.abort();},6000);
   try{
-    const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='+
-      encodeURIComponent(query)+'&json=1&page_size=10&action=process&fields=product_name,brands,nutriments,quantity,serving_size&lc=fr&cc=fr';
-    const resp=await fetch(url,{signal:AbortSignal.timeout(5000)});
-    if(!resp.ok) throw new Error('OFF error '+resp.status);
+    const url='https://world.openfoodfacts.org/cgi/search.pl'+
+      '?search_terms='+encodeURIComponent(query)+
+      '&json=1&page_size=12&action=process'+
+      '&fields=product_name,brands,nutriments,quantity'+
+      '&sort_by=unique_scans_n';
+    const resp=await fetch(url,{signal:controller.signal,mode:'cors'});
+    clearTimeout(timer);
+    if(!resp.ok) throw new Error('Erreur '+resp.status);
     const data=await resp.json();
     const products=data.products||[];
     const items=products
-      .filter(p=>p.product_name && p.nutriments?.['energy-kcal_100g'])
+      .filter(function(p){return p.product_name && p.nutriments && (p.nutriments['energy-kcal_100g']||p.nutriments['energy-kcal']);})
       .slice(0,8)
-      .map(p=>({
-        name: p.product_name.trim(),
-        kcal100: Math.round(p.nutriments['energy-kcal_100g']),
-        unit: 'g',
-        brand: p.brands?.split(',')[0]?.trim()||'',
-        barcode: null
-      }));
+      .map(function(p){
+        const k=p.nutriments['energy-kcal_100g']||p.nutriments['energy-kcal']||0;
+        return {
+          name: p.product_name.trim(),
+          kcal100: Math.round(k),
+          unit: 'g',
+          brand: p.brands?p.brands.split(',')[0].trim():''
+        };
+      });
     if(items.length){
       renderFoodResults(items, qty, 'Open Food Facts');
     } else {
-      // Fallback to local DB
       const local=searchLocalDB(query, qty);
-      renderFoodResults(local, qty, 'Base locale');
+      renderFoodResults(local, qty, local.length?'Base locale':'Aucun résultat');
     }
   }catch(e){
-    // Fallback to local DB on error
+    clearTimeout(timer);
     const local=searchLocalDB(query, qty);
-    renderFoodResults(local, qty, 'Base locale (hors-ligne)');
+    renderFoodResults(local, qty, local.length?'Base locale':'Aucun résultat');
   }
 }
 
@@ -1853,7 +1861,8 @@ async function lookupBarcode(code){
   const status=document.getElementById('scan-status');
   if(res) res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem"><span class="spinner"></span> Recherche du produit…</div>';
   try{
-    const resp=await fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields=product_name,brands,nutriments,quantity',{signal:AbortSignal.timeout(5000)});
+    const bcCtrl=new AbortController();setTimeout(function(){bcCtrl.abort();},6000);
+    const resp=await fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields=product_name,brands,nutriments,quantity',{signal:bcCtrl.signal,mode:'cors'});
     const data=await resp.json();
     if(data.status!==1||!data.product){
       if(res) res.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:.75rem">Produit non trouvé dans Open Food Facts</div>';
